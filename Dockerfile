@@ -34,8 +34,8 @@ COPY . .
 # Copia build del frontend dallo stage precedente
 COPY --from=build-frontend /app/public/build ./public/build
 
-# Installazione dipendenze PHP (senza dev)
-RUN composer install --no-dev --optimize-autoloader
+# Installazione dipendenze PHP (senza dev e senza script)
+RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Configurazione permessi
 RUN chown -R www-data:www-data storage bootstrap/cache public
