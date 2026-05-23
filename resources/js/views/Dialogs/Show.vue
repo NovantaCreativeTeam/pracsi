@@ -1,0 +1,453 @@
+<template>
+    <div class="p-6">
+        <div v-if="loading" class="flex justify-center items-center h-64">
+            <ProgressSpinner />
+        </div>
+
+        <div v-else-if="dialog">
+            <div class="flex justify-between items-center mb-6">
+                <div class="flex items-center gap-4">
+                    <Button icon="pi pi-arrow-left" severity="secondary" rounded text @click="router.back()" />
+                    <h1 class="text-2xl font-bold">{{ dialog.title }} ({{ dialog.reference }})</h1>
+                </div>
+                <div class="flex gap-2">
+                    <Button label="Elimina" icon="pi pi-trash" severity="danger" outlined @click="confirmDelete" />
+                </div>
+            </div>
+
+            <!-- Informazioni Principali -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
+                <Card>
+                    <template #title>Informazioni Generali</template>
+                    <template #content>
+                        <div class="grid grid-cols-2 gap-y-2">
+                            <span class="font-semibold">Corpus:</span>
+                            <span>{{ dialog.corpus?.project_reference }} - {{ dialog.corpus?.title }}</span>
+
+                            <span class="font-semibold">Codice:</span>
+                            <span>{{ dialog.reference }}</span>
+
+                            <span class="font-semibold">Data:</span>
+                            <span>{{ dialog.date || '-' }}</span>
+
+                            <span class="font-semibold">Città/Regione:</span>
+                            <span>{{ dialog.city || '-' }}, {{ dialog.region || '-' }} ({{ dialog.country || '-' }} - {{ dialog.continent || '-' }})</span>
+
+                            <span class="font-semibold">Lingue Soggetto:</span>
+                            <span>{{ dialog.subject_languages || '-' }}</span>
+
+                            <span class="font-semibold">Lingue di Lavoro:</span>
+                            <span>{{ dialog.working_languages || '-' }}</span>
+                        </div>
+                    </template>
+                </Card>
+
+                <Card>
+                    <template #title>Dettagli Sessione</template>
+                    <template #content>
+                        <div class="grid grid-cols-2 gap-y-2">
+                            <span class="font-semibold">Genere:</span>
+                            <span>{{ dialog.genre || '-' }} ({{ dialog.subgenre || '-' }})</span>
+
+                            <span class="font-semibold">Topic:</span>
+                            <span>{{ dialog.topic || '-' }}</span>
+
+                            <span class="font-semibold">Coinvolgimento Ricercatore:</span>
+                            <span>{{ dialog.researcher_involvement || '-' }}</span>
+
+                            <span class="font-semibold">Tipo Pianificazione:</span>
+                            <span>{{ dialog.planning_type || '-' }}</span>
+
+                            <span class="font-semibold">Contesto Sociale:</span>
+                            <span>{{ dialog.social_context || '-' }}</span>
+
+                            <span class="font-semibold">Clienti:</span>
+                            <span>{{ dialog.customer_n }} (parlanti: {{ dialog.speaking_customer_n }})</span>
+
+                            <span class="font-semibold">Tipo Cliente:</span>
+                            <span>{{ dialog.customer_type || '-' }}</span>
+
+                            <span class="font-semibold">Profilo Cliente:</span>
+                            <span>{{ dialog.customer_profile || '-' }}</span>
+
+                            <span class="font-semibold">Caratteristiche Parlanti:</span>
+                            <span>{{ dialog.speakers_features || '-' }}</span>
+
+                            <span class="font-semibold">Ristorante:</span>
+                            <span>{{ dialog.restaurant_title || '-' }}</span>
+
+                            <span class="font-semibold">Caratteristiche Ristorante:</span>
+                            <span>{{ dialog.restaurant_features || '-' }}</span>
+
+                            <span class="font-semibold">Tipo Menu:</span>
+                            <span>{{ dialog.menu_type || '-' }}</span>
+
+                            <span class="font-semibold">Pasto:</span>
+                            <span>{{ dialog.meal || '-' }}</span>
+                        </div>
+                    </template>
+                </Card>
+            </div>
+
+            <!-- Descrizione se presente -->
+            <Card v-if="dialog.description" class="mb-8">
+                <template #title>Descrizione</template>
+                <template #content>
+                    <p>{{ dialog.description }}</p>
+                </template>
+            </Card>
+
+            <!-- Partecipanti -->
+            <div class="mb-8">
+                <h2 class="text-xl font-bold mb-4">Partecipanti</h2>
+                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                    <Card v-for="participant in dialog.participants" :key="participant.id"
+                          class="shadow-sm border border-slate-200">
+                        <template #title>
+                            <div class="flex items-center gap-2">
+                                <i class="pi pi-user text-primary text-xl"></i>
+                                <span>{{ participant.code }}</span>
+                            </div>
+                        </template>
+                        <template #subtitle>
+                            {{ participant.role || '-' }}
+                        </template>
+                        <template #content>
+                            <div class="flex flex-col gap-1 text-sm">
+                                <div v-if="participant.full_name">
+                                    <span class="font-semibold text-gray-500">Nome:</span> {{ participant.full_name }}
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-500">Genere:</span> {{ participant.gender || '-' }}
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-500">Età:</span> {{ participant.age_range || '-' }}
+                                </div>
+                                <div>
+                                    <span class="font-semibold text-gray-500">Occupazione:</span> {{ participant.occupation || '-' }}
+                                </div>
+                                <div v-if="participant.languages">
+                                    <span class="font-semibold text-gray-500">Lingue:</span> {{ participant.languages }}
+                                </div>
+                            </div>
+                        </template>
+                    </Card>
+                </div>
+            </div>
+
+            <!-- Contenuto con Tab -->
+            <Card>
+                <template #content>
+                    <Tabs value="0">
+                        <TabList>
+                            <Tab value="0">Mosse Dialogiche</Tab>
+                            <Tab value="1" v-if="dialog.audio_path">Audio e Trascrizione</Tab>
+                        </TabList>
+                        <TabPanels>
+                            <TabPanel value="0">
+                                <!-- Mosse Dialogiche -->
+                                <div class="mb-4">
+                                    <div class="flex justify-between items-center mb-4 pt-4">
+                                        <h2 class="text-xl font-bold">Mosse Dialogiche</h2>
+                                        <div class="flex gap-4 items-center">
+                                            <Button icon="pi pi-external-link" label="Esporta CSV" severity="primary" @click="exportCSV" size="small" />
+                                            <IconField>
+                                                <InputIcon class="pi pi-search" />
+                                                <InputText v-model="filters['global'].value" placeholder="Cerca ovunque..." size="small" />
+                                            </IconField>
+                                            <MultiSelect
+                                                v-model="selectedColumns"
+                                                :options="columns"
+                                                optionLabel="header"
+                                                @update:modelValue="onColumnToggle"
+                                                placeholder="Seleziona Colonne"
+                                                class="w-64"
+                                                :showToggleAll="false"
+                                                filter
+                                                size="small"
+                                            />
+                                        </div>
+                                    </div>
+
+                                    <DataTable
+                                        ref="dt"
+                                        :value="moves"
+                                        v-model:filters="filters"
+                                        :globalFilterFields="[
+                                            'participant.code',
+                                            'annotation',
+                                            'micro_task.task.type.name',
+                                            'sequence.type.name',
+                                            'micro_task.type.name',
+                                            'transaction.name',
+                                            'move_level1.name',
+                                            'move_level2.name',
+                                            'move_level3.name'
+                                        ]"
+                                        class="p-datatable-sm"
+                                        filterDisplay="menu"
+                                        showGridlines
+                                        rowGroupMode="rowspan"
+                                        scrollable
+                                        :groupRowsBy="['micro_task.task.type.name', 'sequence.type.name', 'micro_task.type.name']"
+                                    >
+                                        <Column v-if="selectedColumns.some(c => c.field === 'begin')" field="begin" header="Inizio">
+                                            <template #body="{ data }">
+                                                {{ formatTime(data.begin) }}
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'end')" field="end" header="Fine">
+                                            <template #body="{ data }">
+                                                {{ formatTime(data.end) }}
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'task')" field="micro_task.task.type.name" header="Task" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.micro_task?.task?.type?.name || '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per task" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'interactional_segment')" field="sequence.interactional_segment_id" header="IS" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.sequence?.interactional_segment_id ? `IS ${data.sequence.interactional_segment_id}` : '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per IS" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'sequence')" field="sequence.type.name" header="Sequence" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.sequence?.type?.name || '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per sequence" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'participant')" field="participant.code" header="Parlante" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                <span v-if="data.participant">{{ data.participant.code }}</span>
+                                                <span v-else class="text-gray-400 italic">Pausa</span>
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per parlante" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'annotation')" field="annotation" header="Testo" :showFilterMatchModes="false">
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per testo" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'micro_task')" field="micro_task.type.name" header="Micro Task" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.micro_task?.type?.name || '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per micro task" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'transaction')" field="transaction.name" header="Transaction" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.transaction?.name || '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per transaction" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level1')" field="move_level1.name" header="ML 1" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.move_level1?.name || '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per ML 1" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level2')" field="move_level2.name" header="ML 2" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.move_level2?.name || '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per ML 2" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level3')" field="move_level3.name" header="ML 3" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.move_level3?.name || '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per ML 3" />
+                                            </template>
+                                        </Column>
+                                    </DataTable>
+                                </div>
+                            </TabPanel>
+
+                            <TabPanel value="1" v-if="dialog.audio_path">
+                                <div class="mt-4 mb-6">
+                                    <WaveformPlayer
+                                        :url="dialog.audio_path"
+                                        :moves="moves"
+                                    />
+                                </div>
+                            </TabPanel>
+                        </TabPanels>
+                    </Tabs>
+                </template>
+            </Card>
+        </div>
+
+        <div v-else class="text-center p-12">
+            <h2 class="text-xl text-gray-500">Dialogo non trovato</h2>
+            <Button label="Torna all'elenco" icon="pi pi-arrow-left" class="mt-4" @click="router.push({ name: 'dialogs.index' })" />
+        </div>
+
+        <Toast />
+        <ConfirmDialog />
+    </div>
+</template>
+
+<script setup>
+import { ref, computed, onMounted } from 'vue';
+import { useRoute, useRouter } from 'vue-router';
+import { dialogService } from '../../services/dialogService';
+import { useToast } from 'primevue/usetoast';
+import { useConfirm } from 'primevue/useconfirm';
+
+import Button from 'primevue/button';
+import Card from 'primevue/card';
+import DataTable from 'primevue/datatable';
+import Column from 'primevue/column';
+import ProgressSpinner from 'primevue/progressspinner';
+import Toast from 'primevue/toast';
+import ConfirmDialog from 'primevue/confirmdialog';
+// import Dialog from 'primevue/dialog'; // Rimosso
+import WaveformPlayer from '../../components/WaveformPlayer.vue';
+
+import MultiSelect from 'primevue/multiselect';
+import InputText from 'primevue/inputtext';
+import IconField from 'primevue/iconfield';
+import InputIcon from 'primevue/inputicon';
+import { FilterMatchMode } from '@primevue/core/api';
+
+import Tabs from 'primevue/tabs';
+import TabList from 'primevue/tablist';
+import Tab from 'primevue/tab';
+import TabPanels from 'primevue/tabpanels';
+import TabPanel from 'primevue/tabpanel';
+
+const route = useRoute();
+const router = useRouter();
+const toast = useToast();
+const confirm = useConfirm();
+
+const loading = ref(true);
+const dialog = ref(null);
+const moves = ref([]);
+const dt = ref();
+// const showPlayer = ref(false); // Rimosso perché non più necessario
+
+const columns = ref([
+    { field: 'begin', header: 'Inizio' },
+    { field: 'end', header: 'Fine' },
+    { field: 'task', header: 'Task' },
+    { field: 'interactional_segment', header: 'Interactional Segment' },
+    { field: 'sequence', header: 'Sequence' },
+    { field: 'participant', header: 'Parlante' },
+    { field: 'annotation', header: 'Testo' },
+    { field: 'micro_task', header: 'Micro Task' },
+    { field: 'transaction', header: 'Transaction' },
+    { field: 'move_level1', header: 'ML 1' },
+    { field: 'move_level2', header: 'ML 2' },
+    { field: 'move_level3', header: 'ML 3' },
+]);
+
+const initialFields = ['begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1'];
+const selectedColumns = ref(columns.value.filter(col => initialFields.includes(col.field)));
+
+const filters = ref({
+    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'participant.code': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    annotation: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'micro_task.task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'sequence.interactional_segment_id': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'sequence.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'micro_task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'transaction.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'move_level1.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'move_level2.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'move_level3.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+});
+
+const onColumnToggle = (val) => {
+    selectedColumns.value = columns.value.filter((col) => val.includes(col));
+};
+
+const formatTime = (milliseconds) => {
+    if (milliseconds === null || milliseconds === undefined) return '-';
+    const totalSeconds = milliseconds / 1000;
+    const m = Math.floor(totalSeconds / 60);
+    const s = (totalSeconds % 60).toFixed(2);
+    return `${m}:${s.toString().padStart(5, '0')}`;
+};
+
+const exportCSV = () => {
+    dt.value.exportCSV();
+};
+
+
+const loadDialog = async () => {
+    loading.value = true;
+    try {
+        const response = await dialogService.get(route.params.id);
+        dialog.value = response.data.data;
+        moves.value = response.data.moves;
+    } catch (error) {
+        console.error('Errore durante il caricamento del dialogo:', error);
+        toast.add({ severity: 'error', summary: 'Errore', detail: 'Impossibile caricare il dialogo', life: 3000 });
+    } finally {
+        loading.value = false;
+    }
+};
+
+const confirmDelete = () => {
+    confirm.require({
+        message: `Sei sicuro di voler eliminare il dialogo "${dialog.value.title}"?`,
+        header: 'Conferma eliminazione',
+        icon: 'pi pi-exclamation-triangle',
+        acceptProps: {
+            label: 'Elimina',
+            severity: 'danger'
+        },
+        rejectProps: {
+            label: 'Annulla',
+            severity: 'secondary',
+            outlined: true
+        },
+        accept: async () => {
+            try {
+                await dialogService.delete(dialog.value.id);
+                toast.add({ severity: 'success', summary: 'Successo', detail: 'Dialogo eliminato correttamente', life: 3000 });
+                router.push({ name: 'dialogs.index' });
+            } catch (error) {
+                toast.add({ severity: 'error', summary: 'Errore', detail: 'Impossibile eliminare il dialogo', life: 3000 });
+            }
+        }
+    });
+};
+
+onMounted(() => {
+    loadDialog();
+});
+</script>

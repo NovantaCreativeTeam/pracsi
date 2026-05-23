@@ -1,0 +1,50 @@
+import axios from '../plugins/axios';
+
+export const dialogService = {
+    /**
+     * Crea un nuovo dialog e importa i dati dall'EAF.
+     * @param {FormData} formData
+     * @returns {Promise}
+     */
+    async create(formData) {
+        return await axios.post('/dialogs', formData, {
+            headers: {
+                'Content-Type': 'multipart/form-data'
+            }
+        });
+    },
+
+    /**
+     * Recupera la lista di tutti i dialoghi.
+     * @returns {Promise}
+     */
+    async getAll() {
+        return await axios.get('/dialogs');
+    },
+
+    /**
+     * Recupera un singolo dialogo per ID.
+     * @param {number} id
+     * @returns {Promise}
+     */
+    async get(id) {
+        return await axios.get(`/dialogs/${id}`);
+    },
+
+    /**
+     * Elimina un dialogo.
+     * @param {number} id
+     * @returns {Promise}
+     */
+    async delete(id) {
+        return await axios.delete(`/dialogs/${id}`);
+    },
+
+    /**
+     * Recupera la lista dei corpora (necessario per la select nella form).
+     * @returns {Promise}
+     */
+    async getCorpora() {
+        return await axios.get('/corpora');
+    }
+};
