@@ -1,0 +1,16 @@
+#!/bin/sh
+
+# Ottimizzazione Laravel
+php artisan config:cache
+php artisan route:cache
+php artisan view:cache
+php artisan event:cache
+
+# Migrazioni (opzionale, dipende se vuoi farle al boot)
+# php artisan migrate --force
+
+# Avvio Nginx in background
+nginx -g "daemon off;" &
+
+# Avvio PHP-FPM in foreground
+php-fpm
