@@ -23,6 +23,11 @@ RUN apk add --no-cache \
 
 RUN docker-php-ext-install pdo_mysql mbstring zip exif pcntl bcmath gd
 
+# Configurazione PHP (Limiti upload)
+RUN echo "upload_max_filesize=100M" > /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "post_max_size=100M" >> /usr/local/etc/php/conf.d/uploads.ini \
+    && echo "memory_limit=256M" >> /usr/local/etc/php/conf.d/uploads.ini
+
 # Copia Composer da immagine ufficiale
 COPY --from=composer:latest /usr/bin/composer /usr/bin/composer
 
