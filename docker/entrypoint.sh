@@ -1,6 +1,7 @@
 #!/bin/sh
 
 # Ottimizzazione Laravel
+php artisan storage:link
 php artisan package:discover --ansi
 php artisan config:cache
 php artisan route:cache

@@ -43,7 +43,8 @@ COPY --from=build-frontend /app/public/build ./public/build
 RUN composer install --no-dev --optimize-autoloader --no-scripts
 
 # Configurazione permessi
-RUN chown -R www-data:www-data storage bootstrap/cache public
+RUN mkdir -p storage/app/public/audio storage/app/public/elan \
+    && chown -R www-data:www-data storage bootstrap/cache public
 
 # Configurazione Nginx
 COPY docker/nginx.conf /etc/nginx/http.d/default.conf
