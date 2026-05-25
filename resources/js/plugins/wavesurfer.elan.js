@@ -67,6 +67,7 @@ export default class ElanPlugin extends WaveSurfer.BasePlugin {
     loadXML(url, callback) {
         const xhr = new XMLHttpRequest();
         xhr.open('GET', url, true);
+        xhr.withCredentials = true; // Aggiunge i cookie della sessione se necessario
         xhr.responseType = 'text';
         xhr.send();
         xhr.addEventListener('load', e => {
