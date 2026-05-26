@@ -92,6 +92,8 @@ const initWaveSurfer = () => {
     cursorColor: '#C4E0E9',
     cursorWidth: 2,
     height: 80,
+    mediaControls: true,
+    backend: 'MediaElement',
     ...props.options,
     url: props.url,
     plugins: plugins
