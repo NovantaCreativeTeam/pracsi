@@ -4,6 +4,7 @@ import Login from '../views/Auth/Login.vue'
 import Register from "../views/Auth/Register.vue";
 import UsersIndex from "../views/Users/Index.vue";
 import RolesIndex from "../views/Roles/Index.vue";
+import CorporaIndex from "../views/Corpora/Index.vue";
 
 const routes = [
     {
@@ -13,6 +14,16 @@ const routes = [
         meta: {
             requiresAuth: true,
             layout: 'app'
+        }
+    },
+    {
+        path: '/corpora-management',
+        name: 'corpora.index',
+        component: CorporaIndex,
+        meta: {
+            requiresAuth: true,
+            layout: 'app',
+            permission: 'manage-corpora'
         }
     },
     {
@@ -39,6 +50,17 @@ const routes = [
         path: '/dialogs',
         name: 'dialogs.index',
         component: () => import('../views/Dialogs/Index.vue'),
+        meta: {
+            requiresAuth: true,
+            layout: 'app',
+            permission: 'view-dialogs'
+        }
+    },
+    {
+        path: '/corpora/:corpusId/dialogs',
+        name: 'corpora.dialogs',
+        component: () => import('../views/Dialogs/Index.vue'),
+        props: true,
         meta: {
             requiresAuth: true,
             layout: 'app',

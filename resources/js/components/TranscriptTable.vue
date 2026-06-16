@@ -1,5 +1,5 @@
 <template>
-    <div class="transcript-table-container">
+    <div class="transcript-table-container max-w-full overflow-hidden">
         <div class="flex justify-between items-center mb-4">
             <h3 class="text-lg font-bold">Trascrizione</h3>
             <div class="flex gap-4 items-center">
@@ -25,12 +25,15 @@
             :value="moves"
             v-model:filters="filters"
             :globalFilterFields="globalFilterFields"
-            class="p-datatable-sm"
+            class="p-datatable-sm text-sm"
             filterDisplay="menu"
             dataKey="id"
             @row-click="onRowClick"
             :rowClass="rowClass"
             showGridlines
+            scrollable
+            scrollDirection="both"
+            tableStyle="min-width: 60rem"
         >
             <Column v-if="isColumnSelected('time')" field="begin" header="Time" class="whitespace-nowrap">
                 <template #body="{ data }">
@@ -133,6 +136,12 @@
                     <InputText v-model="filterModel.value" type="text" placeholder="Filtra ML 3" />
                 </template>
             </Column>
+
+            <Column v-if="isColumnSelected('notes')" header="Note">
+                <template #body="{ data }">
+                    {{ getNotesForMove(data) }}
+                </template>
+            </Column>
         </DataTable>
     </div>
 </template>
@@ -151,6 +160,10 @@ const props = defineProps({
     moves: {
         type: Array,
         required: true
+    },
+    notes: {
+        type: Array,
+        default: () => []
     },
     currentTime: {
         type: Number,
@@ -184,7 +197,8 @@ const columns = computed(() => {
         { field: 'transaction', header: 'Transaction' },
         { field: 'ml1', header: 'ML 1' },
         { field: 'ml2', header: 'ML 2' },
-        { field: 'ml3', header: 'ML 3' }
+        { field: 'ml3', header: 'ML 3' },
+        { field: 'notes', header: 'Note' }
     ];
     return cols;
 });
@@ -194,8 +208,8 @@ const selectedColumns = ref([]);
 // Initialize selectedColumns when participants are loaded
 watch(participants, (newParticipants) => {
     if (newParticipants.length > 0 && selectedColumns.value.length === 0) {
-        // Mostra inizialmente solo: Inizio, fine (Time), Task, Sequence, Parlante, testo (Participant columns), Microtask, e ML1
-        const initialFields = ['time', 'task', 'sequence', 'micro_task', 'ml1'];
+        // Mostra inizialmente solo: Time, Parlanti, Pause, Task, Microtask, IS (Interactional Segment) e Sequence
+        const initialFields = ['time', 'pause', 'task', 'micro_task', 'is', 'sequence'];
         const participantFields = newParticipants.map(p => 'participant_' + p.code);
 
         selectedColumns.value = columns.value.filter(col =>
@@ -233,6 +247,17 @@ const onColumnToggle = (val) => {
 
 const isColumnSelected = (field) => {
     return selectedColumns.value.some(c => c.field === field);
+};
+
+const getNotesForMove = (move) => {
+    if (!props.notes || props.notes.length === 0) return '-';
+
+    // Trova le note che si sovrappongono temporalmente alla mossa
+    const relevantNotes = props.notes.filter(note => {
+        return (note.begin < move.end && note.end > move.begin);
+    });
+
+    return relevantNotes.map(n => n.content).join('; ') || '-';
 };
 
 const onRowClick = (event) => {

@@ -27,6 +27,10 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/permissions', [RoleController::class, 'permissions'])->middleware('can:manage-roles');
 
     Route::get('/corpora', [CorpusController::class, 'index'])->middleware('can:view-corpora');
+    Route::post('/corpora', [CorpusController::class, 'store'])->middleware('can:manage-corpora');
+    Route::get('/corpora/{id}', [CorpusController::class, 'show'])->middleware('can:view-corpora');
+    Route::put('/corpora/{id}', [CorpusController::class, 'update'])->middleware('can:manage-corpora');
+    Route::delete('/corpora/{id}', [CorpusController::class, 'destroy'])->middleware('can:manage-corpora');
     Route::get('/dialogs', [DialogController::class, 'index'])->middleware('can:view-dialogs');
     Route::get('/dialogs/{id}', [DialogController::class, 'show'])->middleware('can:view-dialogs');
     Route::post('/dialogs', [DialogController::class, 'store'])->middleware('can:manage-dialogs');

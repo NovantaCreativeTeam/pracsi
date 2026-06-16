@@ -15,80 +15,6 @@
                 </div>
             </div>
 
-            <!-- Informazioni Principali -->
-            <div class="grid grid-cols-1 md:grid-cols-2 gap-6 mb-8">
-                <Card>
-                    <template #title>Informazioni Generali</template>
-                    <template #content>
-                        <div class="grid grid-cols-2 gap-y-2">
-                            <span class="font-semibold">Corpus:</span>
-                            <span>{{ dialog.corpus?.project_reference }} - {{ dialog.corpus?.title }}</span>
-
-                            <span class="font-semibold">Codice:</span>
-                            <span>{{ dialog.reference }}</span>
-
-                            <span class="font-semibold">Data:</span>
-                            <span>{{ dialog.date || '-' }}</span>
-
-                            <span class="font-semibold">Città/Regione:</span>
-                            <span>{{ dialog.city || '-' }}, {{ dialog.region || '-' }} ({{ dialog.country || '-' }} - {{ dialog.continent || '-' }})</span>
-
-                            <span class="font-semibold">Lingue Soggetto:</span>
-                            <span>{{ dialog.subject_languages || '-' }}</span>
-
-                            <span class="font-semibold">Lingue di Lavoro:</span>
-                            <span>{{ dialog.working_languages || '-' }}</span>
-                        </div>
-                    </template>
-                </Card>
-
-                <Card>
-                    <template #title>Dettagli Sessione</template>
-                    <template #content>
-                        <div class="grid grid-cols-2 gap-y-2">
-                            <span class="font-semibold">Genere:</span>
-                            <span>{{ dialog.genre || '-' }} ({{ dialog.subgenre || '-' }})</span>
-
-                            <span class="font-semibold">Topic:</span>
-                            <span>{{ dialog.topic || '-' }}</span>
-
-                            <span class="font-semibold">Coinvolgimento Ricercatore:</span>
-                            <span>{{ dialog.researcher_involvement || '-' }}</span>
-
-                            <span class="font-semibold">Tipo Pianificazione:</span>
-                            <span>{{ dialog.planning_type || '-' }}</span>
-
-                            <span class="font-semibold">Contesto Sociale:</span>
-                            <span>{{ dialog.social_context || '-' }}</span>
-
-                            <span class="font-semibold">Clienti:</span>
-                            <span>{{ dialog.customer_n }} (parlanti: {{ dialog.speaking_customer_n }})</span>
-
-                            <span class="font-semibold">Tipo Cliente:</span>
-                            <span>{{ dialog.customer_type || '-' }}</span>
-
-                            <span class="font-semibold">Profilo Cliente:</span>
-                            <span>{{ dialog.customer_profile || '-' }}</span>
-
-                            <span class="font-semibold">Caratteristiche Parlanti:</span>
-                            <span>{{ dialog.speakers_features || '-' }}</span>
-
-                            <span class="font-semibold">Ristorante:</span>
-                            <span>{{ dialog.restaurant_title || '-' }}</span>
-
-                            <span class="font-semibold">Caratteristiche Ristorante:</span>
-                            <span>{{ dialog.restaurant_features || '-' }}</span>
-
-                            <span class="font-semibold">Tipo Menu:</span>
-                            <span>{{ dialog.menu_type || '-' }}</span>
-
-                            <span class="font-semibold">Pasto:</span>
-                            <span>{{ dialog.meal || '-' }}</span>
-                        </div>
-                    </template>
-                </Card>
-            </div>
-
             <!-- Descrizione se presente -->
             <Card v-if="dialog.description" class="mb-8">
                 <template #title>Descrizione</template>
@@ -97,56 +23,43 @@
                 </template>
             </Card>
 
-            <!-- Partecipanti -->
-            <div class="mb-8">
-                <h2 class="text-xl font-bold mb-4">Partecipanti</h2>
-                <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
-                    <Card v-for="participant in dialog.participants" :key="participant.id"
-                          class="shadow-sm border border-slate-200">
-                        <template #title>
-                            <div class="flex items-center gap-2">
-                                <i class="pi pi-user text-primary text-xl"></i>
-                                <span>{{ participant.code }}</span>
-                            </div>
-                        </template>
-                        <template #subtitle>
-                            {{ participant.role || '-' }}
-                        </template>
-                        <template #content>
-                            <div class="flex flex-col gap-1 text-sm">
-                                <div v-if="participant.full_name">
-                                    <span class="font-semibold text-gray-500">Nome:</span> {{ participant.full_name }}
-                                </div>
-                                <div>
-                                    <span class="font-semibold text-gray-500">Genere:</span> {{ participant.gender || '-' }}
-                                </div>
-                                <div>
-                                    <span class="font-semibold text-gray-500">Età:</span> {{ participant.age_range || '-' }}
-                                </div>
-                                <div>
-                                    <span class="font-semibold text-gray-500">Occupazione:</span> {{ participant.occupation || '-' }}
-                                </div>
-                                <div v-if="participant.languages">
-                                    <span class="font-semibold text-gray-500">Lingue:</span> {{ participant.languages }}
-                                </div>
-                            </div>
-                        </template>
-                    </Card>
-                </div>
-            </div>
-
             <!-- Contenuto con Tab -->
             <Card>
                 <template #content>
-                    <Tabs value="0">
+                    <Tabs :value="dialog.audio_path ? '1' : 'info'">
                         <TabList>
+                            <Tab value="1" v-if="dialog.audio_path">Audio</Tab>
+                            <Tab value="2" v-if="dialog.audio_path">Audio e Trascrizione</Tab>
                             <Tab value="0">Mosse Dialogiche</Tab>
-                            <Tab value="1" v-if="dialog.audio_path">Audio e Trascrizione</Tab>
+                            <Tab value="participants">Partecipanti</Tab>
+                            <Tab value="info">Informazioni</Tab>
                         </TabList>
                         <TabPanels>
+                            <TabPanel value="1" v-if="dialog.audio_path">
+                                <div class="mt-4">
+                                    <WaveformPlayer
+                                        :url="dialog.audio_path"
+                                        :moves="moves"
+                                        :notes="dialog.notes || []"
+                                        :showTranscript="false"
+                                    />
+                                </div>
+                            </TabPanel>
+
+                            <TabPanel value="2" v-if="dialog.audio_path">
+                                <div class="mt-4">
+                                    <WaveformPlayer
+                                        :url="dialog.audio_path"
+                                        :moves="moves"
+                                        :notes="dialog.notes || []"
+                                        :showRegions="false"
+                                    />
+                                </div>
+                            </TabPanel>
+
                             <TabPanel value="0">
                                 <!-- Mosse Dialogiche -->
-                                <div class="mb-4">
+                                <div class="overflow-hidden max-w-full">
                                     <div class="flex justify-between items-center mb-4 pt-4">
                                         <h2 class="text-xl font-bold">Mosse Dialogiche</h2>
                                         <div class="flex gap-4 items-center">
@@ -184,11 +97,13 @@
                                             'move_level2.name',
                                             'move_level3.name'
                                         ]"
-                                        class="p-datatable-sm"
+                                        class="p-datatable-sm text-sm"
                                         filterDisplay="menu"
                                         showGridlines
                                         rowGroupMode="rowspan"
                                         scrollable
+                                        scrollDirection="both"
+                                        tableStyle="min-width: 80rem"
                                         :groupRowsBy="['micro_task.task.type.name', 'sequence.type.name', 'micro_task.type.name']"
                                     >
                                         <Column v-if="selectedColumns.some(c => c.field === 'begin')" field="begin" header="Inizio">
@@ -290,16 +205,139 @@
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per ML 3" />
                                             </template>
                                         </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'notes')" field="notes" header="Note" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ getNotesForMove(data) }}
+                                            </template>
+                                        </Column>
                                     </DataTable>
                                 </div>
                             </TabPanel>
 
-                            <TabPanel value="1" v-if="dialog.audio_path">
-                                <div class="mt-4 mb-6">
-                                    <WaveformPlayer
-                                        :url="dialog.audio_path"
-                                        :moves="moves"
-                                    />
+                            <TabPanel value="participants">
+                                <div class="mt-4">
+                                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
+                                        <Card v-for="participant in dialog.participants" :key="participant.id"
+                                              class="shadow-sm border border-slate-200">
+                                            <template #title>
+                                                <div class="flex items-center gap-2">
+                                                    <i class="pi pi-user text-primary text-xl"></i>
+                                                    <span>{{ participant.code }}</span>
+                                                </div>
+                                            </template>
+                                            <template #subtitle>
+                                                {{ participant.role || '-' }}
+                                            </template>
+                                            <template #content>
+                                                <div class="flex flex-col gap-1 text-sm">
+                                                    <div v-if="participant.full_name">
+                                                        <span class="font-semibold text-gray-500">Nome:</span> {{ participant.full_name }}
+                                                    </div>
+                                                    <div>
+                                                        <span class="font-semibold text-gray-500">Genere:</span> {{ participant.gender || '-' }}
+                                                    </div>
+                                                    <div>
+                                                        <span class="font-semibold text-gray-500">Età:</span> {{ participant.age_range || '-' }}
+                                                    </div>
+                                                    <div>
+                                                        <span class="font-semibold text-gray-500">Occupazione:</span> {{ participant.occupation || '-' }}
+                                                    </div>
+                                                    <div v-if="participant.languages">
+                                                        <span class="font-semibold text-gray-500">Lingue:</span> {{ participant.languages }}
+                                                    </div>
+                                                </div>
+                                            </template>
+                                        </Card>
+                                    </div>
+                                </div>
+                            </TabPanel>
+
+                            <TabPanel value="info">
+                                <div class="mt-4 overflow-x-auto">
+                                    <table class="w-full text-sm border-collapse">
+                                        <tbody>
+                                            <!-- Informazioni Generali -->
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500 w-1/3">Corpus:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.corpus?.project_reference }} - {{ dialog.corpus?.title }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Codice:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.reference }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Data:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.date || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Città/Regione:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.city || '-' }}, {{ dialog.region || '-' }} ({{ dialog.country || '-' }} - {{ dialog.continent || '-' }})</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Lingue Soggetto:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.subject_languages || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Lingue di Lavoro:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.working_languages || '-' }}</td>
+                                            </tr>
+
+                                            <!-- Dettagli Sessione -->
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Genere:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.genre || '-' }} ({{ dialog.subgenre || '-' }})</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Topic:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.topic || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Coinvolgimento Ricercatore:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.researcher_involvement || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Tipo Pianificazione:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.planning_type || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Contesto Sociale:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.social_context || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Clienti:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.customer_n }} (parlanti: {{ dialog.speaking_customer_n }})</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Tipo Cliente:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.customer_type || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Profilo Cliente:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.customer_profile || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Caratteristiche Parlanti:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.speakers_features || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Ristorante:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.restaurant_title || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Caratteristiche Ristorante:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.restaurant_features || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Tipo Menu:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.menu_type || '-' }}</td>
+                                            </tr>
+                                            <tr class="border-b border-slate-100">
+                                                <td class="py-2 pr-4 font-semibold text-slate-500">Pasto:</td>
+                                                <td class="py-2 text-slate-700">{{ dialog.meal || '-' }}</td>
+                                            </tr>
+                                        </tbody>
+                                    </table>
                                 </div>
                             </TabPanel>
                         </TabPanels>
@@ -371,9 +409,10 @@ const columns = ref([
     { field: 'move_level1', header: 'ML 1' },
     { field: 'move_level2', header: 'ML 2' },
     { field: 'move_level3', header: 'ML 3' },
+    { field: 'notes', header: 'Note' },
 ]);
 
-const initialFields = ['begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1'];
+const initialFields = ['begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1', 'notes'];
 const selectedColumns = ref(columns.value.filter(col => initialFields.includes(col.field)));
 
 const filters = ref({
@@ -400,6 +439,17 @@ const formatTime = (milliseconds) => {
     const m = Math.floor(totalSeconds / 60);
     const s = (totalSeconds % 60).toFixed(2);
     return `${m}:${s.toString().padStart(5, '0')}`;
+};
+
+const getNotesForMove = (move) => {
+    if (!dialog.value || !dialog.value.notes) return '-';
+
+    // Trova le note che si sovrappongono temporalmente alla mossa
+    const relevantNotes = dialog.value.notes.filter(note => {
+        return (note.begin < move.end && note.end > move.begin);
+    });
+
+    return relevantNotes.map(n => n.content).join('; ') || '-';
 };
 
 const exportCSV = () => {

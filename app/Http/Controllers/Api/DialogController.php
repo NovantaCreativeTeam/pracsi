@@ -26,10 +26,17 @@ class DialogController extends Controller
         $this->imdiImportService = $imdiImportService;
     }
 
-    public function index()
+    public function index(Request $request)
     {
         $this->authorize('view-dialogs');
-        $dialogs = Dialog::with('corpus:id,title,project_reference')->get();
+
+        $query = Dialog::with('corpus:id,title,project_reference');
+
+        if ($request->has('corpus_id')) {
+            $query->where('corpus_id', $request->corpus_id);
+        }
+
+        $dialogs = $query->get();
 
         return response()->json([
             'data' => $dialogs
@@ -42,6 +49,7 @@ class DialogController extends Controller
         $dialog = Dialog::with([
             'corpus',
             'participants',
+            'notes',
         ])->findOrFail($id);
 
         $moves = $dialog->moves()

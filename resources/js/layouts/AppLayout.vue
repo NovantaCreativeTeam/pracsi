@@ -21,8 +21,26 @@
                     :class="$route.name === 'dashboard' ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
                 >
                     <i class="pi pi-home" :class="$route.name === 'dashboard' ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600'"></i>
-                    <span class="font-medium">Dialoghi</span>
+                    <span class="font-medium">Dashboard</span>
                 </RouterLink>
+
+                <div v-if="corpora.length > 0" class="pt-4 pb-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Corpora
+                </div>
+                <RouterLink
+                    v-for="corpus in corpora"
+                    :key="corpus.id"
+                    :to="{ name: 'corpora.dialogs', params: { corpusId: corpus.id } }"
+                    class="flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors group"
+                    :class="$route.name === 'corpora.dialogs' && $route.params.corpusId == corpus.id ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
+                >
+                    <i class="pi pi-folder-open" :class="$route.name === 'corpora.dialogs' && $route.params.corpusId == corpus.id ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600'"></i>
+                    <span class="font-medium">{{ corpus.project_reference }}</span>
+                </RouterLink>
+
+                <div v-if="auth.hasPermission('view-users') || auth.hasPermission('view-roles')" class="pt-4 pb-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
+                    Amministrazione
+                </div>
 
                 <RouterLink
                     v-if="auth.hasPermission('view-users')"
@@ -42,6 +60,16 @@
                 >
                     <i class="pi pi-shield" :class="$route.name === 'roles.index' ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600'"></i>
                     <span class="font-medium">Ruoli</span>
+                </RouterLink>
+
+                <RouterLink
+                    v-if="auth.hasPermission('manage-corpora')"
+                    to="/corpora-management"
+                    class="flex items-center space-x-3 px-3 py-2.5 rounded-lg transition-colors group"
+                    :class="$route.name === 'corpora.index' ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
+                >
+                    <i class="pi pi-folder" :class="$route.name === 'corpora.index' ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600'"></i>
+                    <span class="font-medium">Corpora</span>
                 </RouterLink>
             </nav>
 
@@ -99,15 +127,32 @@
 </template>
 
 <script setup>
+import { ref, onMounted } from 'vue'
 import { useAuthStore } from '../stores/auth'
 import { useRouter, useRoute } from 'vue-router'
+import { dialogService } from '../services/dialogService'
 
 const auth = useAuthStore()
 const router = useRouter()
 const route = useRoute()
 
+const corpora = ref([])
+
+const loadCorpora = async () => {
+    try {
+        const response = await dialogService.getCorpora()
+        corpora.value = response.data.data
+    } catch (error) {
+        console.error('Errore durante il caricamento dei corpora:', error)
+    }
+}
+
 const logout = async () => {
     await auth.logout()
     router.push('/login')
 }
+
+onMounted(() => {
+    loadCorpora()
+})
 </script>

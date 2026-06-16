@@ -16,10 +16,11 @@ export const dialogService = {
 
     /**
      * Recupera la lista di tutti i dialoghi.
+     * @param {Object} params - Parametri di filtro (es. { corpus_id: 1 })
      * @returns {Promise}
      */
-    async getAll() {
-        return await axios.get('/dialogs');
+    async getAll(params = {}) {
+        return await axios.get('/dialogs', { params });
     },
 
     /**

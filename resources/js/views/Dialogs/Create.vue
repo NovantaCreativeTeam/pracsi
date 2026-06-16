@@ -120,6 +120,7 @@ const onSubmit = async () => {
                     placeholder="Seleziona un corpus"
                     :loading="loading"
                     :class="{ 'p-invalid': errors.corpus_id }"
+                    class="w-full"
                 />
                 <small class="p-error" v-if="errors.corpus_id">{{ errors.corpus_id[0] }}</small>
             </div>
@@ -131,6 +132,7 @@ const onSubmit = async () => {
                     v-model="form.reference"
                     placeholder="Es. IT_PSPR_PN29"
                     :class="{ 'p-invalid': errors.reference }"
+                    class="w-full"
                 />
                 <small class="p-error" v-if="errors.reference">{{ errors.reference[0] }}</small>
             </div>
@@ -142,6 +144,7 @@ const onSubmit = async () => {
                     v-model="form.title"
                     placeholder="Titolo del dialogo"
                     :class="{ 'p-invalid': errors.title }"
+                    class="w-full"
                 />
                 <small class="p-error" v-if="errors.title">{{ errors.title[0] }}</small>
             </div>
