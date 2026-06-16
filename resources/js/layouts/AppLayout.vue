@@ -35,7 +35,7 @@
                     :class="$route.name === 'corpora.dialogs' && $route.params.corpusId == corpus.id ? 'bg-primary/10 text-primary' : 'text-slate-600 hover:bg-slate-50 hover:text-slate-900'"
                 >
                     <i class="pi pi-folder-open" :class="$route.name === 'corpora.dialogs' && $route.params.corpusId == corpus.id ? 'text-primary' : 'text-slate-400 group-hover:text-slate-600'"></i>
-                    <span class="font-medium">{{ corpus.project_reference }}</span>
+                    <span class="font-medium">{{ corpus.title }}</span>
                 </RouterLink>
 
                 <div v-if="auth.hasPermission('view-users') || auth.hasPermission('view-roles')" class="pt-4 pb-2 px-3 text-xs font-semibold text-slate-400 uppercase tracking-wider">
