@@ -30,10 +30,10 @@ const submitting = ref(false);
 const errors = ref({});
 
 const fetchCorpora = async () => {
-    loading.ref = true;
+    loading.value = true;
     try {
         const response = await dialogService.getCorpora();
-        corpora.value = response.data;
+        corpora.value = response.data.data;
     } catch (error) {
         console.error('Error fetching corpora:', error);
         toast.add({ severity: 'error', summary: 'Errore', detail: 'Impossibile caricare i corpora', life: 3000 });

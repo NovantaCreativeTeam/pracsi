@@ -9,6 +9,7 @@ import 'primeicons/primeicons.css'
 import { useAuthStore } from './stores/auth'
 import ToastService from 'primevue/toastservice';
 import ConfirmationService from 'primevue/confirmationservice';
+import Tooltip from 'primevue/tooltip';
 
 const MyPreset = definePreset(Aura, {
     semantic: {
@@ -32,6 +33,7 @@ authStore.fetchUser().then(() => {
 
     app.use(ToastService)
     app.use(ConfirmationService)
+    app.directive('tooltip', Tooltip)
 
     app.mount('#app')
 })
