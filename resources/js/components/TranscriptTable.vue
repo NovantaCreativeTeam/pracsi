@@ -35,6 +35,9 @@
             scrollDirection="both"
             tableStyle="min-width: 60rem"
         >
+            <template #header>
+                <component is="style" v-html="dynamicStyles" />
+            </template>
             <Column v-if="isColumnSelected('time')" field="begin" header="Time" class="whitespace-nowrap">
                 <template #body="{ data }">
                     <span class="text-gray-500">
@@ -48,9 +51,14 @@
                 <Column
                     v-if="isColumnSelected('participant_' + p.code)"
                     :header="p.code"
+                    :pt="{
+                        headerContent: {
+                            style: { color: getParticipantColor(p.role) }
+                        }
+                    }"
                 >
                     <template #body="{ data }">
-                        <span v-if="data.participant && data.participant.id === p.id">
+                        <span v-if="data.participant && data.participant.id === p.id" :style="{ color: getParticipantColor(p.role) }">
                             {{ data.annotation }}
                         </span>
                     </template>
@@ -164,6 +172,7 @@ import MultiSelect from 'primevue/multiselect';
 import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import { FilterMatchMode } from '@primevue/core/api';
+import { getParticipantColor, getParticipantLightColor } from '../utils/colors';
 
 const props = defineProps({
     moves: {
@@ -296,10 +305,41 @@ const isSequenceActive = (data) => isTaskActive(data) && activeGroup.value?.sequ
 const rowClass = (data) => {
     const timeInMs = props.currentTime * 1000;
     const isActive = timeInMs >= data.begin && timeInMs <= data.end;
-    return {
+    const classes = {
         'wavesurfer-active-row': isActive
     };
+
+    if (isActive && data.participant) {
+        classes['active-participant-' + data.participant.id] = true;
+    } else if (isActive) {
+        classes['active-pause'] = true;
+    }
+
+    return classes;
 };
+
+const dynamicStyles = computed(() => {
+    let styles = '';
+    participants.value.forEach(p => {
+        const color = getParticipantColor(p.role);
+        const lightColor = getParticipantLightColor(p.role);
+        styles += `
+            .active-participant-${p.id}.wavesurfer-active-row {
+                background-color: ${lightColor} !important;
+                color: ${color} !important;
+                border-top: 1px solid ${color} !important;
+                border-bottom: 1px solid ${color} !important;
+            }
+        `;
+    });
+    styles += `
+        .active-pause.wavesurfer-active-row {
+            background-color: #f8fafc !important;
+            color: #94a3b8 !important;
+        }
+    `;
+    return styles;
+});
 
 // Scroll to active row
 watch(() => props.currentTime, (newTime) => {
@@ -317,9 +357,5 @@ watch(() => props.currentTime, (newTime) => {
 <style scoped>
 :deep(.p-datatable-tbody > tr) {
     cursor: pointer;
-}
-:deep(.wavesurfer-active-row) {
-    background-color: var(--p-primary-50) !important;
-    color: var(--p-primary-700) !important;
 }
 </style>

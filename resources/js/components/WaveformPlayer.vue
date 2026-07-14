@@ -49,6 +49,7 @@ import RegionsPlugin from 'wavesurfer.js/dist/plugins/regions.esm.js';
 import Button from 'primevue/button';
 import ElanPlugin from '../plugins/wavesurfer.elan.js';
 import TranscriptTable from './TranscriptTable.vue';
+import { REGION_COLORS } from '../utils/colors';
 
 const props = defineProps({
   url: {
@@ -234,25 +235,12 @@ const initWaveSurfer = () => {
             return acc;
         }, []);
 
-        const colors = [
-            'rgba(255, 99, 132, 0.2)',   // Red
-            'rgba(54, 162, 235, 0.2)',   // Blue
-            'rgba(255, 206, 86, 0.2)',   // Yellow
-            'rgba(75, 192, 192, 0.2)',   // Green
-            'rgba(153, 102, 255, 0.2)',  // Purple
-            'rgba(255, 159, 64, 0.2)',   // Orange
-            'rgba(199, 199, 199, 0.2)',  // Grey
-            'rgba(83, 102, 255, 0.2)',   // Indigo
-            'rgba(40, 167, 69, 0.2)',    // Success Green
-            'rgba(23, 162, 184, 0.2)'    // Cyan
-        ];
-
         microTasks.forEach((mt, index) => {
             regions.value.addRegion({
                 start: mt.begin / 1000,
                 end: mt.end / 1000,
                 content: mt.name,
-                color: colors[index % colors.length],
+                color: REGION_COLORS[index % REGION_COLORS.length],
                 drag: false,
                 resize: false,
                 loop: false

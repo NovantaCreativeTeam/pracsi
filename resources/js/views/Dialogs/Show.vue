@@ -251,13 +251,14 @@
                                 <div class="mt-4">
                                     <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4">
                                         <Card v-for="participant in dialog.participants" :key="participant.id"
-                                              class="shadow-sm border border-slate-200">
-                                            <template #title>
-                                                <div class="flex items-center gap-2">
-                                                    <i class="pi pi-user text-primary text-xl"></i>
-                                                    <span>{{ participant.code }}</span>
-                                                </div>
-                                            </template>
+                                              class="shadow-sm border-l-4"
+                                              :style="{ borderLeftColor: getParticipantColor(participant.role), backgroundColor: getParticipantLightColor(participant.role) }">
+                                           <template #title>
+                                               <div class="flex items-center gap-2">
+                                                   <i class="pi pi-user text-xl" :style="{ color: getParticipantColor(participant.role) }"></i>
+                                                   <span :style="{ color: getParticipantColor(participant.role) }">{{ participant.code }}</span>
+                                               </div>
+                                           </template>
                                             <template #subtitle>
                                                 {{ participant.role || '-' }}
                                             </template>
@@ -394,6 +395,7 @@ import { useRoute, useRouter } from 'vue-router';
 import { dialogService } from '../../services/dialogService';
 import { useToast } from 'primevue/usetoast';
 import { useConfirm } from 'primevue/useconfirm';
+import { getParticipantColor, getParticipantLightColor } from '../../utils/colors';
 
 import Button from 'primevue/button';
 import Card from 'primevue/card';
