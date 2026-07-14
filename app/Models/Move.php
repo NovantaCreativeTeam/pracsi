@@ -8,6 +8,7 @@ class Move extends Model
 {
     protected $fillable = [
         'dialog_id',
+        'turn',
         'micro_task_id',
         'sequence_id',
         'transaction_id',

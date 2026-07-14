@@ -129,6 +129,12 @@
                                         tableStyle="min-width: 80rem"
                                         :groupRowsBy="['micro_task.task.type.name', 'sequence.type.name', 'micro_task.type.name']"
                                     >
+                                        <Column v-if="selectedColumns.some(c => c.field === 'index')" field="index" header="#" class="w-12 text-gray-400">
+                                            <template #body="slotProps">
+                                                {{ slotProps.index + 1 }}
+                                            </template>
+                                        </Column>
+
                                         <Column v-if="selectedColumns.some(c => c.field === 'begin')" field="begin" header="Inizio">
                                             <template #body="{ data }">
                                                 {{ formatTime(data.begin) }}
@@ -165,6 +171,12 @@
                                             </template>
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per sequence" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'turn')" field="turn" header="Turno" class="font-bold">
+                                            <template #body="{ data }">
+                                                {{ data.turn || '' }}
                                             </template>
                                         </Column>
 
@@ -433,11 +445,13 @@ const dt = ref();
 // const showPlayer = ref(false); // Rimosso perché non più necessario
 
 const columns = ref([
+    { field: 'index', header: '#' },
     { field: 'begin', header: 'Inizio' },
     { field: 'end', header: 'Fine' },
     { field: 'task', header: 'Task' },
     { field: 'interactional_segment', header: 'Interactional Segment' },
     { field: 'sequence', header: 'Sequence' },
+    { field: 'turn', header: 'Turno' },
     { field: 'participant', header: 'Parlante' },
     { field: 'annotation', header: 'Testo' },
     { field: 'notes', header: 'Note' },
@@ -449,7 +463,7 @@ const columns = ref([
     { field: 'non_verbal_action', header: 'Non Verbal Action' },
 ]);
 
-const initialFields = ['begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1', 'notes'];
+const initialFields = ['index', 'turn', 'begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1', 'notes'];
 const selectedColumns = ref(columns.value.filter(col => initialFields.includes(col.field)));
 
 const filters = ref({
@@ -506,7 +520,10 @@ const loadDialog = async () => {
     try {
         const response = await dialogService.get(route.params.id);
         dialog.value = response.data.data;
-        moves.value = response.data.moves;
+        moves.value = response.data.moves.map((move, index) => ({
+            ...move,
+            index: index + 1
+        }));
     } catch (error) {
         console.error('Errore durante il caricamento del dialogo:', error);
         toast.add({ severity: 'error', summary: 'Errore', detail: 'Impossibile caricare il dialogo', life: 3000 });

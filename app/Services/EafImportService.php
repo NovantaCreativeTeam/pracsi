@@ -155,33 +155,30 @@ class EafImportService
                 return $a['begin'] <=> $b['begin'];
             });
 
-            // Genera pause dai gap tra annotazioni
+            // Import delle Move (basate su linguistic_type "Parlante")
+            $allMoves = [];
+
+            // 1. Prepare pauses
             $prevEnd = 0;
             foreach ($allParlanteAnns as $ann) {
                 if ($ann['begin'] > $prevEnd) {
                     $durationSec = ($ann['begin'] - $prevEnd) / 1000;
 
-                    // Considera la pausa solo se è più lunga di 0.2s
                     if ($durationSec >= 0.2) {
-                        $pauseMove = new Move();
-                        $pauseMove->begin = $prevEnd;
-                        $pauseMove->end = $ann['begin'];
-                        $pauseMove->dialog_id = $dialog->id;
-                        $pauseMove->annotation = sprintf('(%.2f)', $durationSec);
-                        $pauseMove->participant_id = null; // Le pause non hanno partecipante
-
-                        // Associazione con entità trasversali
-                        $pauseMove->micro_task_id = $this->findIdByTime($microTasks, $prevEnd, $ann['begin']);
-                        $pauseMove->sequence_id = $this->findIdByTime($sequences, $prevEnd, $ann['begin']);
-                        $pauseMove->transaction_id = $this->findIdByTime($transactions, $prevEnd, $ann['begin']);
-
-                        $pauseMove->save();
+                        $allMoves[] = [
+                            'begin' => $prevEnd,
+                            'end' => $ann['begin'],
+                            'dialog_id' => $dialog->id,
+                            'annotation' => sprintf('(%.2f)', $durationSec),
+                            'participant_id' => null,
+                            'is_pause' => true,
+                        ];
                     }
                 }
                 $prevEnd = max($prevEnd, $ann['end']);
             }
 
-            // Import delle Move (basate su linguistic_type "Parlante")
+            // 2. Prepare speaker moves
             foreach ($tiers as $tier) {
                 if ($tier['linguistic_type'] === 'Parlante') {
                     $participantName = $tier['participant'];
@@ -190,27 +187,55 @@ class EafImportService
                     foreach ($tier['annotations'] as $ann) {
                         if ($ann['begin'] === null || $ann['end'] === null) continue;
 
-                        $move = new Move();
-                        $move->begin = $ann['begin'];
-                        $move->end = $ann['end'];
-                        $move->dialog_id = $dialog->id;
-                        $move->annotation = $ann['value'];
-                        $move->participant_id = $participantId;
-
-                        // Associazione con entità trasversali in base al tempo
-                        $move->micro_task_id = $this->findIdByTime($microTasks, $ann['begin'], $ann['end']);
-                        $move->sequence_id = $this->findIdByTime($sequences, $ann['begin'], $ann['end']);
-                        $move->transaction_id = $this->findIdByTime($transactions, $ann['begin'], $ann['end']);
-
-                        // Move Level 1, 2, 3
-                        $move->move_level_1_id = $this->findMoveLevelId($tiers, 'MoveLev1', $ann['begin'], $ann['end'], $participantName, MoveLevel1::class);
-                        $move->move_level_2_id = $this->findMoveLevelId($tiers, 'MoveLev2', $ann['begin'], $ann['end'], $participantName, MoveLevel2::class);
-                        $move->move_level_3_id = $this->findMoveLevelId($tiers, 'MoveLev3', $ann['begin'], $ann['end'], $participantName, MoveLevel3::class);
-                        $move->non_verbal_action_id = $this->findMoveLevelId($tiers, 'Non verbal action', $ann['begin'], $ann['end'], $participantName, NonVerbalAction::class);
-
-                        $move->save();
+                        $allMoves[] = [
+                            'begin' => $ann['begin'],
+                            'end' => $ann['end'],
+                            'dialog_id' => $dialog->id,
+                            'annotation' => $ann['value'],
+                            'participant_id' => $participantId,
+                            'participant_name' => $participantName,
+                            'is_pause' => false,
+                        ];
                     }
                 }
+            }
+
+            // 3. Sort all moves by begin time
+            usort($allMoves, function ($a, $b) {
+                if ($a['begin'] === $b['begin']) {
+                    return $a['end'] <=> $b['end'];
+                }
+                return $a['begin'] <=> $b['begin'];
+            });
+
+            // 4. Save moves with turn number
+            $turnCounter = 1;
+            foreach ($allMoves as $moveData) {
+                $move = new Move();
+                $move->begin = $moveData['begin'];
+                $move->end = $moveData['end'];
+                $move->dialog_id = $moveData['dialog_id'];
+                $move->annotation = $moveData['annotation'];
+                $move->participant_id = $moveData['participant_id'];
+
+                if (!$moveData['is_pause']) {
+                    $move->turn = $turnCounter++;
+                    $participantName = $moveData['participant_name'];
+                    // Move Level 1, 2, 3
+                    $move->move_level_1_id = $this->findMoveLevelId($tiers, 'MoveLev1', $move->begin, $move->end, $participantName, MoveLevel1::class);
+                    $move->move_level_2_id = $this->findMoveLevelId($tiers, 'MoveLev2', $move->begin, $move->end, $participantName, MoveLevel2::class);
+                    $move->move_level_3_id = $this->findMoveLevelId($tiers, 'MoveLev3', $move->begin, $move->end, $participantName, MoveLevel3::class);
+                    $move->non_verbal_action_id = $this->findMoveLevelId($tiers, 'Non verbal action', $move->begin, $move->end, $participantName, NonVerbalAction::class);
+                } else {
+                    $move->turn = null;
+                }
+
+                // Associazione con entità trasversali in base al tempo
+                $move->micro_task_id = $this->findIdByTime($microTasks, $move->begin, $move->end);
+                $move->sequence_id = $this->findIdByTime($sequences, $move->begin, $move->end);
+                $move->transaction_id = $this->findIdByTime($transactions, $move->begin, $move->end);
+
+                $move->save();
             }
         });
     }

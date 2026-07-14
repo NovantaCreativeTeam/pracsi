@@ -38,11 +38,21 @@
             <template #header>
                 <component is="style" v-html="dynamicStyles" />
             </template>
+            <Column v-if="isColumnSelected('index')" field="index" header="#" class="w-12 text-gray-400">
+                <template #body="slotProps">
+                    {{ slotProps.index + 1 }}
+                </template>
+            </Column>
             <Column v-if="isColumnSelected('time')" field="begin" header="Time" class="whitespace-nowrap">
                 <template #body="{ data }">
                     <span class="text-gray-500">
                         {{ (data.begin / 1000).toFixed(2) }}–{{ (data.end / 1000).toFixed(2) }}
                     </span>
+                </template>
+            </Column>
+            <Column v-if="isColumnSelected('turn')" field="turn" header="Turno" class="whitespace-nowrap font-bold">
+                <template #body="{ data }">
+                    {{ data.turn || '' }}
                 </template>
             </Column>
 
@@ -205,7 +215,9 @@ const participants = computed(() => {
 
 const columns = computed(() => {
     const cols = [
+        { field: 'index', header: '#' },
         { field: 'time', header: 'Time' },
+        { field: 'turn', header: 'Turno' },
         ...participants.value.map(p => ({ field: 'participant_' + p.code, header: p.code })),
         { field: 'notes', header: 'Note' },
         { field: 'pause', header: 'Pausa' },
@@ -227,8 +239,8 @@ const selectedColumns = ref([]);
 // Initialize selectedColumns when participants are loaded
 watch(participants, (newParticipants) => {
     if (newParticipants.length > 0 && selectedColumns.value.length === 0) {
-        // Mostra inizialmente solo: Time, Parlanti, Pause, Task, Microtask, IS (Interactional Segment) e Sequence
-        const initialFields = ['time', 'pause', 'task', 'micro_task', 'is', 'sequence'];
+        // Mostra inizialmente solo: #, Turno, Time, Parlanti, Pause, Task, Microtask, IS (Interactional Segment) e Sequence
+        const initialFields = ['index', 'turn', 'time', 'pause', 'task', 'micro_task', 'is', 'sequence'];
         const participantFields = newParticipants.map(p => 'participant_' + p.code);
 
         selectedColumns.value = columns.value.filter(col =>
