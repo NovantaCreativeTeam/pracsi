@@ -63,6 +63,7 @@ class DialogController extends Controller
                 'moveLevel1',
                 'moveLevel2',
                 'moveLevel3',
+                'nonVerbalAction',
             ])
             ->orderBy('begin')
             ->get();
@@ -133,6 +134,14 @@ class DialogController extends Controller
         }
 
         $validatedData = $validator->validated();
+
+        // Default values for mandatory numeric fields if they are not provided
+        if (!isset($validatedData['customer_n'])) {
+            $validatedData['customer_n'] = 1;
+        }
+        if (!isset($validatedData['speaking_customer_n'])) {
+            $validatedData['speaking_customer_n'] = 0;
+        }
 
         $eafFile = $request->file('eaf_file');
         $imdiFile = $request->file('imdi_file');

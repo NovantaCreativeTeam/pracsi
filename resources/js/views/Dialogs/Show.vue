@@ -52,7 +52,7 @@
                         <TabList>
                             <Tab value="1" v-if="dialog.audio_path">Audio</Tab>
                             <Tab value="2" v-if="dialog.audio_path">Audio e Trascrizione</Tab>
-                            <Tab value="0">Mosse Dialogiche</Tab>
+                            <Tab value="0">Trascrizione per la stampa</Tab>
                             <Tab value="participants">Partecipanti</Tab>
                             <Tab value="info">Informazioni</Tab>
                         </TabList>
@@ -80,10 +80,10 @@
                             </TabPanel>
 
                             <TabPanel value="0">
-                                <!-- Mosse Dialogiche -->
+                                <!-- Trascrizione per la stampa -->
                                 <div class="overflow-hidden max-w-full">
                                     <div class="flex justify-between items-center mb-4 pt-4">
-                                        <h2 class="text-xl font-bold">Mosse Dialogiche</h2>
+                                        <h2 class="text-xl font-bold">Trascrizione per la stampa</h2>
                                         <div class="flex gap-4 items-center">
                                             <Button icon="pi pi-external-link" label="Esporta CSV" severity="primary" @click="exportCSV" size="small" />
                                             <IconField>
@@ -117,7 +117,8 @@
                                             'transaction.name',
                                             'move_level1.name',
                                             'move_level2.name',
-                                            'move_level3.name'
+                                            'move_level3.name',
+                                            'non_verbal_action.name'
                                         ]"
                                         class="p-datatable-sm text-sm"
                                         filterDisplay="menu"
@@ -225,6 +226,15 @@
                                             </template>
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per ML 3" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'non_verbal_action')" field="non_verbal_action.name" header="Non Verbal Action" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.non_verbal_action?.name || '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per Non Verbal Action" />
                                             </template>
                                         </Column>
 
@@ -433,6 +443,7 @@ const columns = ref([
     { field: 'move_level1', header: 'ML 1' },
     { field: 'move_level2', header: 'ML 2' },
     { field: 'move_level3', header: 'ML 3' },
+    { field: 'non_verbal_action', header: 'Non Verbal Action' },
     { field: 'notes', header: 'Note' },
 ]);
 
@@ -451,6 +462,7 @@ const filters = ref({
     'move_level1.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'move_level2.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'move_level3.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'non_verbal_action.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
 
 const onColumnToggle = (val) => {

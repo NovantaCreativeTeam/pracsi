@@ -10,6 +10,7 @@ use App\Models\Move;
 use App\Models\MoveLevel1;
 use App\Models\MoveLevel2;
 use App\Models\MoveLevel3;
+use App\Models\NonVerbalAction;
 use App\Models\Participant;
 use App\Models\Sequence;
 use App\Models\SequenceType;
@@ -205,6 +206,7 @@ class EafImportService
                         $move->move_level_1_id = $this->findMoveLevelId($tiers, 'MoveLev1', $ann['begin'], $ann['end'], $participantName, MoveLevel1::class);
                         $move->move_level_2_id = $this->findMoveLevelId($tiers, 'MoveLev2', $ann['begin'], $ann['end'], $participantName, MoveLevel2::class);
                         $move->move_level_3_id = $this->findMoveLevelId($tiers, 'MoveLev3', $ann['begin'], $ann['end'], $participantName, MoveLevel3::class);
+                        $move->non_verbal_action_id = $this->findMoveLevelId($tiers, 'Non verbal action', $ann['begin'], $ann['end'], $participantName, NonVerbalAction::class);
 
                         $move->save();
                     }

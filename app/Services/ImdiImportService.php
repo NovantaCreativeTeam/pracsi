@@ -43,6 +43,8 @@ class ImdiImportService
             'city' => (string)$location->Address, // In the example Address contains the city
             'genre' => (string)$content->Genre,
             'subgenre' => (string)$content->SubGenre,
+            'customer_n' => 1,
+            'speaking_customer_n' => 0,
         ];
 
         // Parse CommunicationContext
@@ -113,7 +115,9 @@ class ImdiImportService
             }
         }
 
-        return array_filter($dialogData);
+        return array_filter($dialogData, function($value) {
+            return $value !== null && $value !== '';
+        });
     }
 
     private function parseActors($actors)
@@ -167,7 +171,9 @@ class ImdiImportService
                 }
             }
 
-            $participants[] = array_filter($pData);
+            $participants[] = array_filter($pData, function($value) {
+                return $value !== null && $value !== '';
+            });
         }
 
         return $participants;

@@ -137,6 +137,15 @@
                 </template>
             </Column>
 
+            <Column v-if="isColumnSelected('nva')" field="non_verbal_action.name" header="Non Verbal Action" :showFilterMatchModes="false">
+                <template #body="{ data }">
+                    {{ data.non_verbal_action?.name || data.nonVerbalAction?.name || '-' }}
+                </template>
+                <template #filter="{ filterModel }">
+                    <InputText v-model="filterModel.value" type="text" placeholder="Filtra Non Verbal Action" />
+                </template>
+            </Column>
+
             <Column v-if="isColumnSelected('notes')" header="Note">
                 <template #body="{ data }">
                     {{ getNotesForMove(data) }}
@@ -198,6 +207,7 @@ const columns = computed(() => {
         { field: 'ml1', header: 'ML 1' },
         { field: 'ml2', header: 'ML 2' },
         { field: 'ml3', header: 'ML 3' },
+        { field: 'nva', header: 'Non Verbal Action' },
         { field: 'notes', header: 'Note' }
     ];
     return cols;
@@ -227,6 +237,7 @@ const filters = ref({
     'move_level1.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'move_level2.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
     'move_level3.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    'non_verbal_action.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
 });
 
 const globalFilterFields = [
@@ -237,7 +248,8 @@ const globalFilterFields = [
     'transaction.name',
     'move_level1.name',
     'move_level2.name',
-    'move_level3.name'
+    'move_level3.name',
+    'non_verbal_action.name'
 ];
 
 

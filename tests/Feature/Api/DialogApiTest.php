@@ -7,6 +7,8 @@ use App\Models\Dialog;
 use App\Models\User;
 use App\Models\Task;
 use App\Models\Move;
+use Spatie\Permission\Models\Role;
+use Spatie\Permission\Models\Permission;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Facades\File;
 use Illuminate\Http\UploadedFile;
@@ -26,10 +28,64 @@ class DialogApiTest extends TestCase
 
         Storage::fake('local');
         Storage::fake('public');
+
+        // Setup roles and permissions
+        $adminRole = Role::create(['name' => 'Amministratore']);
+        Permission::create(['name' => 'view-dialogs']);
+        Permission::create(['name' => 'manage-dialogs']);
+        $adminRole->givePermissionTo(['view-dialogs', 'manage-dialogs']);
+
         $this->user = User::factory()->create();
+        $this->user->assignRole($adminRole);
+
         $this->corpus = Corpus::create([
             'project_reference' => 'TEST_PROJ',
             'title' => 'Test Corpus'
+        ]);
+    }
+
+    public function test_can_create_dialog_with_minimal_imdi_data()
+    {
+        $eafPath = public_path('elan/IT_PSPR_PN29.eaf');
+        if (!File::exists($eafPath)) {
+            $this->markTestSkipped("EAF file not found at $eafPath");
+        }
+
+        $eafFile = new UploadedFile($eafPath, 'IT_PSPR_PN29.eaf', 'application/xml', null, true);
+
+        // IMDI file content without customer_n or speaking_customer_n
+        $imdiContent = '<?xml version="1.0" encoding="UTF-8"?>
+        <METATRANSCRIPT>
+            <Session>
+                <Title>IMDI Test</Title>
+                <Date>2024-01-01</Date>
+                <MDGroup>
+                    <Location><Continent>Europe</Continent><Country>Italy</Country><Region>Calabria</Region></Location>
+                    <Project><Name>Test</Name></Project>
+                    <Keys></Keys>
+                    <Content><Genre>Conversation</Genre><SubGenre>Interazione</SubGenre></Content>
+                    <Actors></Actors>
+                </MDGroup>
+            </Session>
+        </METATRANSCRIPT>';
+
+        $imdiFile = UploadedFile::fake()->createWithContent('test.imdi', $imdiContent);
+
+        $response = $this->actingAs($this->user)
+            ->postJson('/api/dialogs', [
+                'corpus_id' => $this->corpus->id,
+                'reference' => 'IMDI_REF',
+                'eaf_file' => $eafFile,
+                'imdi_file' => $imdiFile,
+            ]);
+
+        $response->assertStatus(201);
+
+        // Verify default values are applied
+        $this->assertDatabaseHas('dialogs', [
+            'title' => 'IMDI Test',
+            'customer_n' => 1,
+            'speaking_customer_n' => 0
         ]);
     }
 

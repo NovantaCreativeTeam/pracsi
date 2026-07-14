@@ -15,6 +15,7 @@ class Move extends Model
         'move_level_1_id',
         'move_level_2_id',
         'move_level_3_id',
+        'non_verbal_action_id',
         'begin',
         'end',
         'annotation',
@@ -53,6 +54,11 @@ class Move extends Model
     public function moveLevel3()
     {
         return $this->belongsTo(MoveLevel3::class, 'move_level_3_id');
+    }
+
+    public function nonVerbalAction()
+    {
+        return $this->belongsTo(NonVerbalAction::class, 'non_verbal_action_id');
     }
 
     public function dialog()
