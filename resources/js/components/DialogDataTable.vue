@@ -3,6 +3,7 @@
         <div class="flex flex-col md:flex-row justify-between items-start md:items-center gap-4 mb-6">
             <h1 class="text-2xl font-bold">{{ title }}</h1>
             <div class="flex items-center gap-2">
+                <Button v-if="selectedDialogs.length > 0" label="Visualizza Selezionati" icon="pi pi-eye" class="whitespace-nowrap" severity="primary" outlined size="small" @click="viewSelected"/>
                 <IconField>
                     <InputIcon class="pi pi-search" />
                     <InputText v-model="filters['global'].value" placeholder="Cerca..." size="small"/>
@@ -18,11 +19,12 @@
         <Card class="mb-4">
             <template #content>
                 <div class="overflow-hidden max-w-full">
-                    <DataTable :value="dialogs" :loading="loading" v-model:filters="filters"
+                    <DataTable :value="dialogs" :loading="loading" v-model:filters="filters" v-model:selection="selectedDialogs"
                                :globalFilterFields="['corpus.project_reference', 'title', 'genre', 'subgenre', 'topic', 'subject_languages', 'city', 'region', 'country', 'restaurant_title', 'reference', 'speakers_features', 'working_languages', 'continent', 'customer_type', 'customer_profile', 'restaurant_features', 'menu_type']"
                                paginator :rows="10" tableStyle="min-width: 70rem" removableSort
                                scrollable scrollDirection="horizontal"
                                class="p-datatable-sm">
+                        <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
                         <Column v-for="col of selectedColumns" :key="col.field" :field="col.field" :header="col.header" :sortable="col.sortable"></Column>
 
                         <Column header="Azioni" :exportable="false" style="min-width:8rem" v-if="auth.hasPermission('view-dialogs') || auth.hasPermission('manage-dialogs')">
@@ -50,6 +52,7 @@ import { ref, onMounted, watch } from 'vue';
 import { useRouter } from 'vue-router';
 import { dialogService } from '../services/dialogService';
 import { useAuthStore } from '../stores/auth';
+import { useDialogNavigationStore } from '../stores/dialogNavigation';
 import Button from 'primevue/button';
 import SplitButton from 'primevue/splitbutton';
 import DataTable from 'primevue/datatable';
@@ -78,8 +81,10 @@ const router = useRouter();
 const toast = useToast();
 const confirm = useConfirm();
 const auth = useAuthStore();
+const navStore = useDialogNavigationStore();
 
 const dialogs = ref([]);
+const selectedDialogs = ref([]);
 const loading = ref(true);
 
 const filters = ref({
@@ -135,7 +140,16 @@ const loadDialogs = async () => {
 };
 
 const viewDetails = (id) => {
+    navStore.clearNavigation();
     router.push({ name: 'dialogs.show', params: { id } });
+};
+
+const viewSelected = () => {
+    if (selectedDialogs.value.length > 0) {
+        const ids = selectedDialogs.value.map(d => d.id);
+        navStore.setNavigationList(ids, 0);
+        router.push({ name: 'dialogs.show', params: { id: ids[0] } });
+    }
 };
 
 const getActionItems = (data) => {

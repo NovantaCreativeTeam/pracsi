@@ -10,8 +10,30 @@
                     <Button icon="pi pi-arrow-left" severity="secondary" rounded text @click="router.back()" />
                     <h1 class="text-2xl font-bold">{{ dialog.title }} ({{ dialog.reference }})</h1>
                 </div>
-                <div class="flex gap-2">
-                    <Button label="Elimina" icon="pi pi-trash" severity="danger" outlined @click="confirmDelete" />
+                <div class="flex items-center gap-2">
+                    <template v-if="navStore.isActive">
+                        <span class="text-sm text-gray-500 mr-2">
+                            {{ navStore.currentDisplayIndex }} di {{ navStore.total }}
+                        </span>
+                        <Button
+                            icon="pi pi-chevron-left"
+                            severity="secondary"
+                            :disabled="!navStore.hasPrevious"
+                            @click="navigate('previous')"
+                            v-tooltip.bottom="'Precedente'"
+                        />
+                        <Button
+                            icon="pi pi-chevron-right"
+                            severity="secondary"
+                            :disabled="!navStore.hasNext"
+                            @click="navigate('next')"
+                            v-tooltip.bottom="'Successivo'"
+                        />
+                        <div class="w-px h-6 bg-gray-300 mx-2"></div>
+                    </template>
+                    <div class="flex gap-2">
+                        <Button label="Elimina" icon="pi pi-trash" severity="danger" outlined @click="confirmDelete" />
+                    </div>
                 </div>
             </div>
 
@@ -357,7 +379,7 @@
 </template>
 
 <script setup>
-import { ref, computed, onMounted } from 'vue';
+import { ref, computed, onMounted, watch } from 'vue';
 import { useRoute, useRouter } from 'vue-router';
 import { dialogService } from '../../services/dialogService';
 import { useToast } from 'primevue/usetoast';
@@ -384,11 +406,13 @@ import TabList from 'primevue/tablist';
 import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
+import { useDialogNavigationStore } from '../../stores/dialogNavigation';
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const confirm = useConfirm();
+const navStore = useDialogNavigationStore();
 
 const loading = ref(true);
 const dialog = ref(null);
@@ -456,6 +480,12 @@ const exportCSV = () => {
     dt.value.exportCSV();
 };
 
+const navigate = (direction) => {
+    const targetId = direction === 'next' ? navStore.nextId : navStore.previousId;
+    if (targetId) {
+        router.push({ name: 'dialogs.show', params: { id: targetId } });
+    }
+};
 
 const loadDialog = async () => {
     loading.value = true;
@@ -499,5 +529,17 @@ const confirmDelete = () => {
 
 onMounted(() => {
     loadDialog();
+    if (navStore.isActive) {
+        navStore.setCurrentId(route.params.id);
+    }
+});
+
+watch(() => route.params.id, (newId) => {
+    if (newId) {
+        loadDialog();
+        if (navStore.isActive) {
+            navStore.setCurrentId(newId);
+        }
+    }
 });
 </script>
