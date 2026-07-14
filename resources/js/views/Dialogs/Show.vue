@@ -184,6 +184,12 @@
                                             </template>
                                         </Column>
 
+                                        <Column v-if="selectedColumns.some(c => c.field === 'notes')" field="notes" header="Note" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ getNotesForMove(data) }}
+                                            </template>
+                                        </Column>
+
                                         <Column v-if="selectedColumns.some(c => c.field === 'micro_task')" field="micro_task.type.name" header="Micro Task" :showFilterMatchModes="false">
                                             <template #body="{ data }">
                                                 {{ data.micro_task?.type?.name || '-' }}
@@ -235,12 +241,6 @@
                                             </template>
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per Non Verbal Action" />
-                                            </template>
-                                        </Column>
-
-                                        <Column v-if="selectedColumns.some(c => c.field === 'notes')" field="notes" header="Note" :showFilterMatchModes="false">
-                                            <template #body="{ data }">
-                                                {{ getNotesForMove(data) }}
                                             </template>
                                         </Column>
                                     </DataTable>
@@ -438,13 +438,13 @@ const columns = ref([
     { field: 'sequence', header: 'Sequence' },
     { field: 'participant', header: 'Parlante' },
     { field: 'annotation', header: 'Testo' },
+    { field: 'notes', header: 'Note' },
     { field: 'micro_task', header: 'Micro Task' },
     { field: 'transaction', header: 'Transaction' },
     { field: 'move_level1', header: 'ML 1' },
     { field: 'move_level2', header: 'ML 2' },
     { field: 'move_level3', header: 'ML 3' },
     { field: 'non_verbal_action', header: 'Non Verbal Action' },
-    { field: 'notes', header: 'Note' },
 ]);
 
 const initialFields = ['begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1', 'notes'];

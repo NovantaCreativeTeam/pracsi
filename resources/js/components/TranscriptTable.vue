@@ -57,6 +57,12 @@
                 </Column>
             </template>
 
+            <Column v-if="isColumnSelected('notes')" header="Note">
+                <template #body="{ data }">
+                    {{ getNotesForMove(data) }}
+                </template>
+            </Column>
+
             <Column v-if="isColumnSelected('pause')" header="Pausa" class="italic text-gray-400">
                 <template #body="{ data }">
                     <span v-if="!data.participant && ((data.end - data.begin) / 1000) >= 0.2">
@@ -145,12 +151,6 @@
                     <InputText v-model="filterModel.value" type="text" placeholder="Filtra Non Verbal Action" />
                 </template>
             </Column>
-
-            <Column v-if="isColumnSelected('notes')" header="Note">
-                <template #body="{ data }">
-                    {{ getNotesForMove(data) }}
-                </template>
-            </Column>
         </DataTable>
     </div>
 </template>
@@ -198,6 +198,7 @@ const columns = computed(() => {
     const cols = [
         { field: 'time', header: 'Time' },
         ...participants.value.map(p => ({ field: 'participant_' + p.code, header: p.code })),
+        { field: 'notes', header: 'Note' },
         { field: 'pause', header: 'Pausa' },
         { field: 'task', header: 'Task' },
         { field: 'micro_task', header: 'Microtask' },
@@ -207,8 +208,7 @@ const columns = computed(() => {
         { field: 'ml1', header: 'ML 1' },
         { field: 'ml2', header: 'ML 2' },
         { field: 'ml3', header: 'ML 3' },
-        { field: 'nva', header: 'Non Verbal Action' },
-        { field: 'notes', header: 'Note' }
+        { field: 'nva', header: 'Non Verbal Action' }
     ];
     return cols;
 });
