@@ -283,7 +283,7 @@ const getNotesForMove = (move) => {
 
 const onRowClick = (event) => {
     const data = event.data;
-    emit('seek', data.begin / 1000);
+    emit('seek', data);
 };
 
 const activeGroup = computed(() => {

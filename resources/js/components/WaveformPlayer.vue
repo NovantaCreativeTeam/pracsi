@@ -88,6 +88,7 @@ const elanRef = ref(null);
 const wavesurfer = ref(null);
 const regions = ref(null);
 const activeRegion = ref(null);
+const activeMove = ref(null);
 const isPlaying = ref(false);
 const currentTime = ref(0);
 const duration = ref(0);
@@ -252,21 +253,36 @@ const initWaveSurfer = () => {
   wavesurfer.value.on('audioprocess', () => {
     currentTime.value = wavesurfer.value.getCurrentTime();
     updateElanHighlight(currentTime.value);
+
+    // Se stiamo ascoltando una mossa specifica, fermati al termine
+    if (activeMove.value) {
+        const timeInMs = currentTime.value * 1000;
+        if (timeInMs >= activeMove.value.end) {
+            wavesurfer.value.pause();
+            activeMove.value = null;
+        }
+    }
   });
 
   wavesurfer.value.on('interaction', () => {
     currentTime.value = wavesurfer.value.getCurrentTime();
     updateElanHighlight(currentTime.value);
+    // Se l'utente interagisce manualmente, resettiamo la mossa attiva
+    activeMove.value = null;
+    activeRegion.value = null;
   });
 
   wavesurfer.value.on('finish', () => {
     isPlaying.value = false;
+    activeMove.value = null;
+    activeRegion.value = null;
   });
 
   if (props.showRegions && regions.value) {
     regions.value.on('region-clicked', (region, event) => {
         event.stopPropagation();
 
+        activeMove.value = null;
         activeRegion.value = null;
 
         wavesurfer.value.setTime(region.start);
@@ -290,15 +306,19 @@ const initWaveSurfer = () => {
   const elan = wavesurfer.value.getActivePlugins().find(p => p instanceof ElanPlugin);
   if (elan) {
     elan.on('select', (start) => {
+      activeMove.value = null;
+      activeRegion.value = null;
       wavesurfer.value.setTime(start);
       wavesurfer.value.play();
     });
   }
 };
 
-const onSeek = (time) => {
+const onSeek = (move) => {
   if (wavesurfer.value) {
-    wavesurfer.value.setTime(time);
+    activeRegion.value = null;
+    activeMove.value = move;
+    wavesurfer.value.setTime(move.begin / 1000);
     wavesurfer.value.play();
   }
 };
@@ -314,6 +334,11 @@ const updateElanHighlight = (time) => {
 
 const togglePlay = () => {
   if (wavesurfer.value) {
+    if (!isPlaying.value) {
+        // Se riprendiamo il play manualmente, resettiamo i vincoli di mossa/regione
+        activeMove.value = null;
+        activeRegion.value = null;
+    }
     wavesurfer.value.playPause();
   }
 };
