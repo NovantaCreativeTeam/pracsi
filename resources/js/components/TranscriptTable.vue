@@ -183,6 +183,8 @@ import IconField from 'primevue/iconfield';
 import InputIcon from 'primevue/inputicon';
 import { FilterMatchMode } from '@primevue/core/api';
 import { getParticipantColor, getParticipantLightColor } from '../utils/colors';
+import { useTablePreferencesStore } from '../stores/tablePreferences';
+import { storeToRefs } from 'pinia';
 
 const props = defineProps({
     moves: {
@@ -200,6 +202,9 @@ const props = defineProps({
 });
 
 const emit = defineEmits(['seek']);
+
+const tablePrefs = useTablePreferencesStore();
+const { transcriptSelectedColumns, transcriptFilters } = storeToRefs(tablePrefs);
 
 const participants = computed(() => {
     const pMap = {};
@@ -238,28 +243,59 @@ const selectedColumns = ref([]);
 
 // Initialize selectedColumns when participants are loaded
 watch(participants, (newParticipants) => {
-    if (newParticipants.length > 0 && selectedColumns.value.length === 0) {
-        // Mostra inizialmente solo: #, Turno, Time, Parlanti, Pause, Task, Microtask, IS (Interactional Segment) e Sequence
-        const initialFields = ['index', 'turn', 'time', 'pause', 'task', 'micro_task', 'is', 'sequence'];
-        const participantFields = newParticipants.map(p => 'participant_' + p.code);
+    if (newParticipants.length > 0) {
+        if (transcriptSelectedColumns.value) {
+            // Fondi le preferenze salvate con le colonne dei partecipanti correnti
+            const persistedCols = transcriptSelectedColumns.value;
+            const participantFields = newParticipants.map(p => 'participant_' + p.code);
 
-        selectedColumns.value = columns.value.filter(col =>
-            initialFields.includes(col.field) || participantFields.includes(col.field)
-        );
+            // Se non ci sono preferenze salvate (strano ma possibile), usa il default
+            if (persistedCols.length === 0) {
+                const initialFields = ['index', 'turn', 'time', 'pause', 'task', 'micro_task', 'is', 'sequence'];
+                selectedColumns.value = columns.value.filter(col =>
+                    initialFields.includes(col.field) || participantFields.includes(col.field)
+                );
+            } else {
+                // Mantieni le colonne persistite e aggiungi TUTTE le colonne partecipanti del dialogo corrente
+                // (opzionale: potremmo voler decidere se mostrarle tutte o no, ma solitamente si vogliono vedere i parlanti)
+                selectedColumns.value = columns.value.filter(col =>
+                    persistedCols.some(pc => pc.field === col.field) || participantFields.includes(col.field)
+                );
+            }
+        } else if (selectedColumns.value.length === 0) {
+            // Mostra inizialmente solo: #, Turno, Time, Parlanti, Pause, Task, Microtask, IS (Interactional Segment) e Sequence
+            const initialFields = ['index', 'turn', 'time', 'pause', 'task', 'micro_task', 'is', 'sequence'];
+            const participantFields = newParticipants.map(p => 'participant_' + p.code);
+
+            selectedColumns.value = columns.value.filter(col =>
+                initialFields.includes(col.field) || participantFields.includes(col.field)
+            );
+        }
     }
 }, { immediate: true });
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'micro_task.task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'micro_task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'sequence.interactional_segment_id': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'sequence.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'transaction.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'move_level1.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'move_level2.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'move_level3.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'non_verbal_action.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-});
+
+const filters = ref({});
+
+if (transcriptFilters.value) {
+    filters.value = JSON.parse(JSON.stringify(transcriptFilters.value));
+} else {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'micro_task.task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'micro_task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'sequence.interactional_segment_id': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'sequence.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'transaction.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'move_level1.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'move_level2.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'move_level3.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'non_verbal_action.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    };
+}
+
+watch(filters, (val) => {
+    transcriptFilters.value = val;
+}, { deep: true });
 
 const globalFilterFields = [
     'annotation',
@@ -276,6 +312,8 @@ const globalFilterFields = [
 
 const onColumnToggle = (val) => {
     selectedColumns.value = columns.value.filter((col) => val.some(s => s.field === col.field));
+    // Persisti solo le colonne che non sono legate ai partecipanti
+    transcriptSelectedColumns.value = JSON.parse(JSON.stringify(selectedColumns.value.filter(col => !col.field.startsWith('participant_'))));
 };
 
 const isColumnSelected = (field) => {

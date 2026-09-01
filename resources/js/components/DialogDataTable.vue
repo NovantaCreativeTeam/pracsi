@@ -53,6 +53,8 @@ import { useRouter } from 'vue-router';
 import { dialogService } from '../services/dialogService';
 import { useAuthStore } from '../stores/auth';
 import { useDialogNavigationStore } from '../stores/dialogNavigation';
+import { useTablePreferencesStore } from '../stores/tablePreferences';
+import { storeToRefs } from 'pinia';
 import Button from 'primevue/button';
 import SplitButton from 'primevue/splitbutton';
 import DataTable from 'primevue/datatable';
@@ -82,14 +84,26 @@ const toast = useToast();
 const confirm = useConfirm();
 const auth = useAuthStore();
 const navStore = useDialogNavigationStore();
+const tablePrefs = useTablePreferencesStore();
+const { dialogsSelectedColumns, dialogsFilters } = storeToRefs(tablePrefs);
 
 const dialogs = ref([]);
 const selectedDialogs = ref([]);
 const loading = ref(true);
 
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-});
+const filters = ref({});
+
+if (dialogsFilters.value) {
+    filters.value = JSON.parse(JSON.stringify(dialogsFilters.value));
+} else {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+    };
+}
+
+watch(filters, (val) => {
+    dialogsFilters.value = val;
+}, { deep: true });
 
 const columns = ref([
     { field: 'corpus.project_reference', header: 'Corpus', sortable: true },
@@ -114,12 +128,16 @@ const columns = ref([
     { field: 'reference', header: 'Codice', sortable: true },
 ]);
 
-const selectedColumns = ref(columns.value.filter(col =>
-    ['corpus.project_reference', 'topic', 'title', 'speaking_customer_n', 'subject_languages', 'reference'].includes(col.field)
-));
+const selectedColumns = ref(
+    dialogsSelectedColumns.value ||
+    columns.value.filter(col =>
+        ['corpus.project_reference', 'topic', 'title', 'speaking_customer_n', 'subject_languages', 'reference'].includes(col.field)
+    )
+);
 
 const onColumnToggle = (val) => {
     selectedColumns.value = columns.value.filter((col) => val.some((sCol) => sCol.field === col.field));
+    dialogsSelectedColumns.value = JSON.parse(JSON.stringify(selectedColumns.value));
 };
 
 const loadDialogs = async () => {

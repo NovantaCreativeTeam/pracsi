@@ -432,12 +432,16 @@ import Tab from 'primevue/tab';
 import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
 import { useDialogNavigationStore } from '../../stores/dialogNavigation';
+import { useTablePreferencesStore } from '../../stores/tablePreferences';
+import { storeToRefs } from 'pinia';
 
 const route = useRoute();
 const router = useRouter();
 const toast = useToast();
 const confirm = useConfirm();
 const navStore = useDialogNavigationStore();
+const tablePrefs = useTablePreferencesStore();
+const { transcriptSelectedColumns, transcriptFilters } = storeToRefs(tablePrefs);
 
 const loading = ref(true);
 const dialog = ref(null);
@@ -465,25 +469,47 @@ const columns = ref([
 ]);
 
 const initialFields = ['index', 'turn', 'begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1', 'notes'];
-const selectedColumns = ref(columns.value.filter(col => initialFields.includes(col.field)));
+const selectedColumns = ref([]);
 
-const filters = ref({
-    global: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'participant.code': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    annotation: { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'micro_task.task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'sequence.interactional_segment_id': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'sequence.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'micro_task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'transaction.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'move_level1.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'move_level2.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'move_level3.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-    'non_verbal_action.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-});
+// Inizializza selectedColumns considerando le preferenze e aggiungendo sempre 'participant'
+if (transcriptSelectedColumns.value) {
+    selectedColumns.value = columns.value.filter(col =>
+        transcriptSelectedColumns.value.some(pc => pc.field === col.field) || col.field === 'participant'
+    );
+} else {
+    selectedColumns.value = columns.value.filter(col => initialFields.includes(col.field));
+}
+
+const filters = ref({});
+
+// Inizializza i filtri in modo da non attivare immediatamente il watcher con valori di default se già presenti nello store
+if (transcriptFilters.value) {
+    filters.value = JSON.parse(JSON.stringify(transcriptFilters.value));
+} else {
+    filters.value = {
+        global: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'participant.code': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        annotation: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'micro_task.task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'sequence.interactional_segment_id': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'sequence.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'micro_task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'transaction.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'move_level1.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'move_level2.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'move_level3.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        'non_verbal_action.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+    };
+}
+
+watch(filters, (val) => {
+    transcriptFilters.value = val;
+}, { deep: true });
 
 const onColumnToggle = (val) => {
     selectedColumns.value = columns.value.filter((col) => val.includes(col));
+    // Persisti solo le colonne che non sono legate al partecipante generico
+    transcriptSelectedColumns.value = JSON.parse(JSON.stringify(selectedColumns.value.filter(col => col.field !== 'participant')));
 };
 
 const formatTime = (milliseconds) => {
