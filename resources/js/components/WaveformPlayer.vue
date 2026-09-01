@@ -73,8 +73,8 @@ const props = defineProps({
     default: true
   },
   showRegions: {
-    type: Boolean,
-    default: true
+    type: Array,
+    default: () => []
   },
   options: {
     type: Object,
@@ -156,6 +156,10 @@ const placeholderStyle = computed(() => {
     };
 });
 
+const getNestedProperty = (obj, path) => {
+    return path.split('.').reduce((acc, part) => acc && acc[part], obj);
+};
+
 const initWaveSurfer = () => {
   if (wavesurfer.value) {
     wavesurfer.value.destroy();
@@ -167,7 +171,7 @@ const initWaveSurfer = () => {
     })
   ];
 
-  if (props.showRegions) {
+  if (props.showRegions && props.showRegions.length > 0) {
     regions.value = RegionsPlugin.create();
     plugins.push(regions.value);
   }
@@ -216,35 +220,47 @@ const initWaveSurfer = () => {
         containerWidth.value = containerRef.value.offsetWidth;
     }
 
-    // Create regions from micro_tasks
-    if (props.showRegions && props.moves && props.moves.length > 0) {
-        const microTasks = props.moves.reduce((acc, move) => {
-            if (move.micro_task && move.micro_task.id) {
-                const existing = acc.find(mt => mt.id === move.micro_task.id);
-                if (!existing) {
-                    acc.push({
-                        id: move.micro_task.id,
-                        name: move.micro_task.type?.name || 'Micro Task',
-                        begin: move.begin,
-                        end: move.end
-                    });
-                } else {
-                    existing.begin = Math.min(existing.begin, move.begin);
-                    existing.end = Math.max(existing.end, move.end);
-                }
-            }
-            return acc;
-        }, []);
+    // Create regions from specified properties
+    if (props.showRegions && props.showRegions.length > 0 && props.moves && props.moves.length > 0) {
+        const isSingleChannel = props.showRegions.length === 1;
 
-        microTasks.forEach((mt, index) => {
-            regions.value.addRegion({
-                start: mt.begin / 1000,
-                end: mt.end / 1000,
-                content: mt.name,
-                color: REGION_COLORS[index % REGION_COLORS.length],
-                drag: false,
-                resize: false,
-                loop: false
+        props.showRegions.forEach((propName, channelIndex) => {
+            const channelIdx = isSingleChannel ? -1 : channelIndex;
+
+            // Raggruppa le mosse per ID della proprietà
+            const groups = props.moves.reduce((acc, move) => {
+                const propValue = getNestedProperty(move, propName);
+                if (propValue && propValue.id) {
+                    const id = propValue.id;
+                    if (!acc[id]) {
+                        acc[id] = {
+                            id: id,
+                            start: move.begin / 1000,
+                            end: move.end / 1000,
+                            content: propValue.name || propValue.type?.name || propName + ' ' + propValue.id,
+                            propName: propName
+                        };
+                    } else {
+                        acc[id].start = Math.min(acc[id].start, move.begin / 1000);
+                        acc[id].end = Math.max(acc[id].end, move.end / 1000);
+                    }
+                }
+                return acc;
+            }, {});
+
+            // Aggiungi le regioni raggruppate
+            Object.values(groups).forEach((group, index) => {
+                regions.value.addRegion({
+                    start: group.start,
+                    end: group.end,
+                    content: group.content,
+                    color: REGION_COLORS[index % REGION_COLORS.length],
+                    drag: false,
+                    resize: false,
+                    loop: false,
+                    channelIdx: channelIdx,
+                    id: `region-${propName}-${group.id}`
+                });
             });
         });
     }
@@ -278,7 +294,7 @@ const initWaveSurfer = () => {
     activeRegion.value = null;
   });
 
-  if (props.showRegions && regions.value) {
+  if (props.showRegions && props.showRegions.length > 0 && regions.value) {
     regions.value.on('region-clicked', (region, event) => {
         event.stopPropagation();
 
@@ -386,7 +402,7 @@ watch(() => [props.url, props.elanUrl, props.moves], () => {
 });
 </script>
 
-<style scoped>
+<style>
 .waveform-container {
     width: 100%;
 }
@@ -417,6 +433,17 @@ watch(() => [props.url, props.elanUrl, props.moves], () => {
 :deep(.wavesurfer-active-row) {
   background-color: #f3f4f6 !important;
   color: #38819B !important;
+}
+
+::part(region) {
+    border-radius: 0;
+    border: 1px solid #fff;
+}
+
+::part(region-content) {
+    font-size: 12px;
+    font-weight: bold;
+    margin-top: 0 !important;
 }
 
 </style>

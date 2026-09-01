@@ -64,6 +64,7 @@
                                         :moves="moves"
                                         :notes="dialog.notes || []"
                                         :showTranscript="false"
+                                        :showRegions="['micro_task', 'sequence.interactional_segment']"
                                     />
                                 </div>
                             </TabPanel>
@@ -74,6 +75,7 @@
                                         :url="dialog.audio_path"
                                         :moves="moves"
                                         :notes="dialog.notes || []"
+                                        :showRegions="['micro_task', 'sequence.interactional_segment']"
                                     />
                                 </div>
                             </TabPanel>
