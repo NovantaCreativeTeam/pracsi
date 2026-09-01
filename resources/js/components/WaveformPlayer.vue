@@ -388,7 +388,7 @@ watch(() => [props.url, props.elanUrl, props.moves], () => {
 
 <style scoped>
 .waveform-container {
-  width: 100%;
+    width: 100%;
 }
 
 :deep(.wavesurfer-annotations) {
@@ -418,4 +418,5 @@ watch(() => [props.url, props.elanUrl, props.moves], () => {
   background-color: #f3f4f6 !important;
   color: #38819B !important;
 }
+
 </style>

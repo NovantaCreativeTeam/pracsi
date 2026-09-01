@@ -11,7 +11,7 @@
                 <MultiSelect :modelValue="selectedColumns" :options="columns" optionLabel="header" placeholder="Seleziona Colonne"
                              :maxSelectedLabels="3" class="w-64" @update:modelValue="onColumnToggle" size="small"/>
                 <router-link :to="{ name: 'dialogs.create' }" v-if="auth.hasPermission('manage-dialogs')">
-                    <Button label="Nuovo Dialogo" icon="pi pi-plus" class="whitespace-nowrap" size="small"/>
+                    <Button label="Nuovo task" icon="pi pi-plus" class="whitespace-nowrap" size="small"/>
                 </router-link>
             </div>
         </div>
@@ -107,13 +107,13 @@ watch(filters, (val) => {
 
 const columns = ref([
     { field: 'corpus.project_reference', header: 'Corpus', sortable: true },
-    { field: 'topic', header: 'Argomento', sortable: true },
-    { field: 'title', header: 'Titolo', sortable: true },
+    { field: 'topic', header: 'Macro-Task', sortable: true },
+    { field: 'title', header: 'Task', sortable: true },
     { field: 'genre', header: 'Genere', sortable: true },
     { field: 'subgenre', header: 'Sottogenere', sortable: true },
     { field: 'speaking_customer_n', header: 'N. Clienti Parlanti', sortable: true },
     { field: 'speakers_features', header: 'Caratteristiche Parlanti', sortable: true },
-    { field: 'subject_languages', header: 'Lingue Soggetto', sortable: true },
+    { field: 'subject_languages', header: 'Lingua', sortable: true },
     { field: 'working_languages', header: 'Lingue di Lavoro', sortable: true },
     { field: 'city', header: 'Città', sortable: true },
     { field: 'region', header: 'Regione', sortable: true },
@@ -131,7 +131,7 @@ const columns = ref([
 const selectedColumns = ref(
     dialogsSelectedColumns.value ||
     columns.value.filter(col =>
-        ['corpus.project_reference', 'topic', 'title', 'speaking_customer_n', 'subject_languages', 'reference'].includes(col.field)
+        ['corpus.project_reference', 'topic', 'title', 'customer_n', 'subject_languages', 'reference', 'restaurant_features'].includes(col.field)
     )
 );
 

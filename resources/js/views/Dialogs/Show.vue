@@ -199,9 +199,9 @@
                                             </template>
                                         </Column>
 
-                                        <Column v-if="selectedColumns.some(c => c.field === 'annotation')" field="annotation" header="Testo" :showFilterMatchModes="false">
+                                        <Column v-if="selectedColumns.some(c => c.field === 'annotation')" field="annotation" header="Trascrizione" :showFilterMatchModes="false">
                                             <template #filter="{ filterModel }">
-                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per testo" />
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per trascrizione" />
                                             </template>
                                         </Column>
 
@@ -458,7 +458,7 @@ const columns = ref([
     { field: 'turn', header: 'Turno' },
     { field: 'participant', header: 'Parlante' },
     { field: 'non_verbal_action', header: 'Non Verbal Action' },
-    { field: 'annotation', header: 'Testo' },
+    { field: 'annotation', header: 'Trascrizione' },
     { field: 'notes', header: 'Note' },
     { field: 'micro_task', header: 'Micro Task' },
     { field: 'transaction', header: 'Transaction' },

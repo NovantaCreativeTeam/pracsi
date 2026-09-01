@@ -24,7 +24,7 @@ const updateTitle = async () => {
             const response = await dialogService.getAll({ corpus_id: props.corpusId });
             const dialogs = response.data.data;
             if (dialogs.length > 0) {
-                pageTitle.value = `Dialoghi - ${dialogs[0].corpus.project_reference}`;
+                pageTitle.value = `Corpus ${dialogs[0].corpus.title}`;
             } else {
                 pageTitle.value = 'Elenco Dialoghi';
             }
