@@ -74,7 +74,6 @@
                                         :url="dialog.audio_path"
                                         :moves="moves"
                                         :notes="dialog.notes || []"
-                                        :showRegions="false"
                                     />
                                 </div>
                             </TabPanel>
