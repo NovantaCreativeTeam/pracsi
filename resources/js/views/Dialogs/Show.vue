@@ -190,6 +190,15 @@
                                             </template>
                                         </Column>
 
+                                        <Column v-if="selectedColumns.some(c => c.field === 'non_verbal_action')" field="non_verbal_action.name" header="Non Verbal Action" :showFilterMatchModes="false">
+                                            <template #body="{ data }">
+                                                {{ data.non_verbal_action?.name || '-' }}
+                                            </template>
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per Non Verbal Action" />
+                                            </template>
+                                        </Column>
+
                                         <Column v-if="selectedColumns.some(c => c.field === 'annotation')" field="annotation" header="Testo" :showFilterMatchModes="false">
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per testo" />
@@ -244,15 +253,6 @@
                                             </template>
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per ML 3" />
-                                            </template>
-                                        </Column>
-
-                                        <Column v-if="selectedColumns.some(c => c.field === 'non_verbal_action')" field="non_verbal_action.name" header="Non Verbal Action" :showFilterMatchModes="false">
-                                            <template #body="{ data }">
-                                                {{ data.non_verbal_action?.name || '-' }}
-                                            </template>
-                                            <template #filter="{ filterModel }">
-                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per Non Verbal Action" />
                                             </template>
                                         </Column>
                                     </DataTable>
@@ -453,14 +453,14 @@ const columns = ref([
     { field: 'sequence', header: 'Sequence' },
     { field: 'turn', header: 'Turno' },
     { field: 'participant', header: 'Parlante' },
+    { field: 'non_verbal_action', header: 'Non Verbal Action' },
     { field: 'annotation', header: 'Testo' },
     { field: 'notes', header: 'Note' },
     { field: 'micro_task', header: 'Micro Task' },
     { field: 'transaction', header: 'Transaction' },
     { field: 'move_level1', header: 'ML 1' },
     { field: 'move_level2', header: 'ML 2' },
-    { field: 'move_level3', header: 'ML 3' },
-    { field: 'non_verbal_action', header: 'Non Verbal Action' },
+    { field: 'move_level3', header: 'ML 3' }
 ]);
 
 const initialFields = ['index', 'turn', 'begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1', 'notes'];

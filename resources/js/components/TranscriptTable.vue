@@ -75,6 +75,15 @@
                 </Column>
             </template>
 
+            <Column v-if="isColumnSelected('nva')" field="non_verbal_action.name" header="Non Verbal Action" :showFilterMatchModes="false">
+                <template #body="{ data }">
+                    {{ data.non_verbal_action?.name || data.nonVerbalAction?.name || '-' }}
+                </template>
+                <template #filter="{ filterModel }">
+                    <InputText v-model="filterModel.value" type="text" placeholder="Filtra Non Verbal Action" />
+                </template>
+            </Column>
+
             <Column v-if="isColumnSelected('notes')" header="Note">
                 <template #body="{ data }">
                     {{ getNotesForMove(data) }}
@@ -160,15 +169,6 @@
                     <InputText v-model="filterModel.value" type="text" placeholder="Filtra ML 3" />
                 </template>
             </Column>
-
-            <Column v-if="isColumnSelected('nva')" field="non_verbal_action.name" header="Non Verbal Action" :showFilterMatchModes="false">
-                <template #body="{ data }">
-                    {{ data.non_verbal_action?.name || data.nonVerbalAction?.name || '-' }}
-                </template>
-                <template #filter="{ filterModel }">
-                    <InputText v-model="filterModel.value" type="text" placeholder="Filtra Non Verbal Action" />
-                </template>
-            </Column>
         </DataTable>
     </div>
 </template>
@@ -219,6 +219,7 @@ const columns = computed(() => {
         { field: 'time', header: 'Time' },
         { field: 'turn', header: 'Turno' },
         ...participants.value.map(p => ({ field: 'participant_' + p.code, header: p.code })),
+        { field: 'nva', header: 'Non Verbal Action' },
         { field: 'notes', header: 'Note' },
         { field: 'pause', header: 'Pausa' },
         { field: 'task', header: 'Task' },
@@ -228,8 +229,7 @@ const columns = computed(() => {
         { field: 'transaction', header: 'Transaction' },
         { field: 'ml1', header: 'ML 1' },
         { field: 'ml2', header: 'ML 2' },
-        { field: 'ml3', header: 'ML 3' },
-        { field: 'nva', header: 'Non Verbal Action' }
+        { field: 'ml3', header: 'ML 3' }
     ];
     return cols;
 });
