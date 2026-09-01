@@ -108,6 +108,7 @@
                                         ref="dt"
                                         :value="moves"
                                         v-model:filters="filters"
+                                        :exportFilename="dialog?.reference || 'trascrizione'"
                                         :globalFilterFields="[
                                             'participant.code',
                                             'annotation',
