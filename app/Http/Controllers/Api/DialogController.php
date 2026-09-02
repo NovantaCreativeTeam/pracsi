@@ -32,6 +32,10 @@ class DialogController extends Controller
 
         $query = Dialog::with('corpus:id,title,project_reference');
 
+        if (!auth()->user()->can('view-unpublished-dialogs')) {
+            $query->where('is_published', true);
+        }
+
         if ($request->has('corpus_id')) {
             $query->where('corpus_id', $request->corpus_id);
         }
@@ -51,6 +55,10 @@ class DialogController extends Controller
             'participants',
             'notes',
         ])->findOrFail($id);
+
+        if (!$dialog->is_published && !auth()->user()->can('view-unpublished-dialogs')) {
+            abort(403, 'Questo dialogo non è stato pubblicato.');
+        }
 
         $moves = $dialog->moves()
             ->with([

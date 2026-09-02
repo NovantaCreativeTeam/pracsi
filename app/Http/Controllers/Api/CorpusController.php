@@ -16,7 +16,14 @@ class CorpusController extends Controller
     public function index()
     {
         $this->authorize('view-corpora');
-        $corpora = Corpus::all();
+
+        $query = Corpus::query();
+
+        if (!auth()->user()->can('view-unpublished-corpora')) {
+            $query->where('is_published', true);
+        }
+
+        $corpora = $query->get();
         return response()->json([
             'data' => $corpora
         ]);
@@ -65,6 +72,11 @@ class CorpusController extends Controller
     {
         $this->authorize('view-corpora');
         $corpus = Corpus::findOrFail($id);
+
+        if (!$corpus->is_published && !auth()->user()->can('view-unpublished-corpora')) {
+            abort(403, 'Questo corpus non è stato pubblicato.');
+        }
+
         return response()->json([
             'data' => $corpus
         ]);
