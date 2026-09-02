@@ -44,6 +44,7 @@ class CorpusController extends Controller
             'depositor' => 'nullable|string|max:255',
             'contact' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'is_published' => 'nullable|boolean',
         ]);
 
         $corpus = Corpus::create($validated);
@@ -94,6 +95,7 @@ class CorpusController extends Controller
             'depositor' => 'nullable|string|max:255',
             'contact' => 'nullable|string|max:255',
             'description' => 'nullable|string',
+            'is_published' => 'nullable|boolean',
         ]);
 
         $corpus->update($validated);

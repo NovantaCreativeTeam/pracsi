@@ -74,6 +74,56 @@ class DialogController extends Controller
         ]);
     }
 
+    public function update(Request $request, $id)
+    {
+        $this->authorize('manage-dialogs');
+        $dialog = Dialog::findOrFail($id);
+
+        $validator = Validator::make($request->all(), [
+            'corpus_id' => 'sometimes|required|exists:corpora,id',
+            'title' => 'sometimes|required|string|max:255',
+            'reference' => 'sometimes|required|string|max:255',
+            'date' => 'nullable|string',
+            'description' => 'nullable|string',
+            'genre' => 'nullable|string',
+            'subgenre' => 'nullable|string',
+            'topic' => 'nullable|string',
+            'subject_languages' => 'nullable|string',
+            'working_languages' => 'nullable|string',
+            'city' => 'nullable|string',
+            'region' => 'nullable|string',
+            'country' => 'nullable|string',
+            'continent' => 'nullable|string',
+            'researcher_involvement' => 'nullable|string',
+            'planning_type' => 'nullable|string',
+            'social_context' => 'nullable|string',
+            'customer_type' => 'nullable|string',
+            'customer_profile' => 'nullable|string',
+            'customer_n' => 'nullable|integer',
+            'speaking_customer_n' => 'nullable|integer',
+            'speakers_features' => 'nullable|string',
+            'restaurant_title' => 'nullable|string',
+            'restaurant_features' => 'nullable|string',
+            'menu_type' => 'nullable|string',
+            'meal' => 'nullable|string',
+            'is_published' => 'nullable|boolean',
+        ]);
+
+        if ($validator->fails()) {
+            return response()->json([
+                'message' => 'Validation error',
+                'errors' => $validator->errors()
+            ], 422);
+        }
+
+        $dialog->update($validator->validated());
+
+        return response()->json([
+            'message' => 'Dialog updated successfully',
+            'data' => $dialog
+        ]);
+    }
+
     public function destroy($id)
     {
         $this->authorize('manage-dialogs');

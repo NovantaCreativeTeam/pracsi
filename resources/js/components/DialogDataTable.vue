@@ -25,7 +25,11 @@
                                scrollable scrollDirection="horizontal"
                                class="p-datatable-sm">
                         <Column selectionMode="multiple" headerStyle="width: 3rem"></Column>
-                        <Column v-for="col of selectedColumns" :key="col.field" :field="col.field" :header="col.header" :sortable="col.sortable"></Column>
+                        <Column v-for="col of selectedColumns" :key="col.field" :field="col.field" :header="col.header" :sortable="col.sortable">
+                            <template #body="slotProps" v-if="col.field === 'is_published'">
+                                <i class="pi" :class="slotProps.data.is_published ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-500'"></i>
+                            </template>
+                        </Column>
 
                         <Column header="Azioni" :exportable="false" style="min-width:8rem" v-if="auth.hasPermission('view-dialogs') || auth.hasPermission('manage-dialogs')">
                             <template #body="slotProps">
@@ -126,6 +130,7 @@ const columns = ref([
     { field: 'restaurant_features', header: 'Caratteristiche Ristorante', sortable: true },
     { field: 'menu_type', header: 'Tipo Menu', sortable: true },
     { field: 'reference', header: 'Codice', sortable: true },
+    { field: 'is_published', header: 'Pubblicato', sortable: true },
 ]);
 
 const selectedColumns = ref(
@@ -170,10 +175,30 @@ const viewSelected = () => {
     }
 };
 
+const togglePublish = async (data) => {
+    try {
+        await dialogService.update(data.id, {
+            is_published: !data.is_published
+        });
+        toast.add({ severity: 'success', summary: 'Successo', detail: `Dialogo ${data.is_published ? 'nascosto' : 'pubblicato'}`, life: 3000 });
+        loadDialogs();
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Errore', detail: 'Impossibile aggiornare lo stato di pubblicazione', life: 3000 });
+    }
+};
+
 const getActionItems = (data) => {
     const items = [];
 
     if (auth.hasPermission('manage-dialogs')) {
+        items.push({
+            label: data.is_published ? 'Nascondi' : 'Pubblica',
+            icon: data.is_published ? 'pi pi-eye-slash' : 'pi pi-eye',
+            command: () => {
+                togglePublish(data);
+            }
+        });
+
         items.push({
             label: 'Elimina',
             icon: 'pi pi-trash',

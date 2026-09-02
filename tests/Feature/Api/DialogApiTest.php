@@ -283,4 +283,41 @@ class DialogApiTest extends TestCase
         $this->assertNotNull($moves[0]['participant_id']);
         $this->assertNull($moves[1]['participant_id']);
     }
+
+    public function test_can_update_dialog_publication_status()
+    {
+        $dialog = Dialog::create([
+            'corpus_id' => $this->corpus->id,
+            'title' => 'To Update',
+            'reference' => 'UPD001',
+            'customer_n' => 1,
+            'speaking_customer_n' => 1,
+            'is_published' => false
+        ]);
+
+        $response = $this->actingAs($this->user)
+            ->putJson("/api/dialogs/{$dialog->id}", [
+                'is_published' => true
+            ]);
+
+        $response->assertStatus(200);
+        $this->assertTrue($response->json('data.is_published'));
+        $this->assertDatabaseHas('dialogs', [
+            'id' => $dialog->id,
+            'is_published' => true
+        ]);
+
+        // Toggle back
+        $response = $this->actingAs($this->user)
+            ->putJson("/api/dialogs/{$dialog->id}", [
+                'is_published' => false
+            ]);
+
+        $response->assertStatus(200);
+        $this->assertFalse($response->json('data.is_published'));
+        $this->assertDatabaseHas('dialogs', [
+            'id' => $dialog->id,
+            'is_published' => false
+        ]);
+    }
 }

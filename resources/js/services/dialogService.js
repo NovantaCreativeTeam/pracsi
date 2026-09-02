@@ -42,6 +42,16 @@ export const dialogService = {
     },
 
     /**
+     * Aggiorna un dialogo esistente.
+     * @param {number} id
+     * @param {Object} dialogData
+     * @returns {Promise}
+     */
+    async update(id, dialogData) {
+        return await axios.put(`/dialogs/${id}`, dialogData);
+    },
+
+    /**
      * Recupera la lista dei corpora (necessario per la select nella form).
      * @returns {Promise}
      */

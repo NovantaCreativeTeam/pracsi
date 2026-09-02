@@ -35,6 +35,12 @@ class Dialog extends Model
         'meal',
         'audio_path',
         'eaf_path',
+        'is_published',
+    ];
+
+    protected $casts = [
+        'is_published' => 'boolean',
+        'date' => 'date',
     ];
 
     public function corpus()

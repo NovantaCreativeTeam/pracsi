@@ -25,6 +25,11 @@
                         <Column field="title" header="Titolo" sortable class="text-slate-600"></Column>
                         <Column field="subject_language" header="Lingua Soggetto" sortable class="text-slate-600"></Column>
                         <Column field="location" header="Località" sortable class="text-slate-600"></Column>
+                        <Column field="is_published" header="Pubblicato" sortable>
+                            <template #body="slotProps">
+                                <i class="pi" :class="slotProps.data.is_published ? 'pi-check-circle text-green-500' : 'pi-times-circle text-red-500'"></i>
+                            </template>
+                        </Column>
                         <Column header="Azioni" :exportable="false" style="min-width:10rem">
                             <template #body="slotProps">
                                 <SplitButton
@@ -97,6 +102,10 @@
                     <label for="description" class="mb-1 block">Descrizione</label>
                     <Textarea id="description" v-model="corpus.description" rows="3" class="w-full" />
                 </div>
+                <div class="field flex items-center gap-2">
+                    <ToggleSwitch v-model="corpus.is_published" inputId="is_published" />
+                    <label for="is_published">Pubblicato</label>
+                </div>
             </div>
             <template #footer>
                 <Button label="Annulla" icon="pi pi-times" text @click="hideDialog" />
@@ -119,6 +128,7 @@ import SplitButton from 'primevue/splitbutton'
 import Dialog from 'primevue/dialog'
 import InputText from 'primevue/inputtext'
 import Textarea from 'primevue/textarea'
+import ToggleSwitch from 'primevue/toggleswitch'
 
 const toast = useToast()
 const confirm = useConfirm()
@@ -156,7 +166,8 @@ const openNew = () => {
         continent: '',
         depositor: '',
         contact: '',
-        description: ''
+        description: '',
+        is_published: false
     }
     submitted.value = false
     corpusDialog.value = true
@@ -172,8 +183,28 @@ const editCorpus = (data) => {
     corpusDialog.value = true
 }
 
+const togglePublish = async (data) => {
+    try {
+        await corpusService.update(data.id, {
+            ...data,
+            is_published: !data.is_published
+        });
+        toast.add({ severity: 'success', summary: 'Successo', detail: `Corpus ${data.is_published ? 'nascosto' : 'pubblicato'}`, life: 3000 });
+        loadCorpora();
+    } catch (error) {
+        toast.add({ severity: 'error', summary: 'Errore', detail: 'Impossibile aggiornare lo stato di pubblicazione', life: 3000 });
+    }
+}
+
 const getActionItems = (data) => {
     return [
+        {
+            label: data.is_published ? 'Nascondi' : 'Pubblica',
+            icon: data.is_published ? 'pi pi-eye-slash' : 'pi pi-eye',
+            command: () => {
+                togglePublish(data);
+            }
+        },
         {
             label: 'Elimina',
             icon: 'pi pi-trash',

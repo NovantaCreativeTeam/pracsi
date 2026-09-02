@@ -20,6 +20,11 @@ class Corpus extends Model
         'depositor',
         'contact',
         'description',
+        'is_published',
+    ];
+
+    protected $casts = [
+        'is_published' => 'boolean',
     ];
 
     public function dialogs()

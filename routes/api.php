@@ -34,5 +34,6 @@ Route::middleware('auth:sanctum')->group(function () {
     Route::get('/dialogs', [DialogController::class, 'index'])->middleware('can:view-dialogs');
     Route::get('/dialogs/{id}', [DialogController::class, 'show'])->middleware('can:view-dialogs');
     Route::post('/dialogs', [DialogController::class, 'store'])->middleware('can:manage-dialogs');
+    Route::put('/dialogs/{id}', [DialogController::class, 'update'])->middleware('can:manage-dialogs');
     Route::delete('/dialogs/{id}', [DialogController::class, 'destroy'])->middleware('can:manage-dialogs');
 });
