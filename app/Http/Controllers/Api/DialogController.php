@@ -116,7 +116,13 @@ class DialogController extends Controller
             ], 422);
         }
 
-        $dialog->update($validator->validated());
+        $data = $validator->validated();
+
+        if (isset($data['is_published']) && $data['is_published'] !== $dialog->is_published) {
+            $this->authorize('publish-dialogs');
+        }
+
+        $dialog->update($data);
 
         return response()->json([
             'message' => 'Dialog updated successfully',

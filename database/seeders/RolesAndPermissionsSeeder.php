@@ -30,6 +30,7 @@ class RolesAndPermissionsSeeder extends Seeder
             'manage-corpora',
             'view-dialogs',
             'manage-dialogs',
+            'publish-dialogs',
         ];
 
         foreach ($permissions as $permission) {

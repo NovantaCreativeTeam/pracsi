@@ -8,7 +8,11 @@
             <div class="flex justify-between items-center mb-6">
                 <div class="flex items-center gap-4">
                     <Button icon="pi pi-arrow-left" severity="secondary" rounded text @click="router.back()" />
-                    <h1 class="text-2xl font-bold">{{ dialog.title }} ({{ dialog.reference }})</h1>
+                    <h1 class="text-2xl font-bold">
+                        {{ dialog.title }} ({{ dialog.reference }})
+                        <Tag v-if="dialog.is_published" value="Pubblicato" severity="success" class="ml-2" />
+                        <Tag v-else value="Bozza" severity="secondary" class="ml-2" />
+                    </h1>
                 </div>
                 <div class="flex items-center gap-2">
                     <template v-if="navStore.isActive">
@@ -32,6 +36,14 @@
                         <div class="w-px h-6 bg-gray-300 mx-2"></div>
                     </template>
                     <div class="flex gap-2">
+                        <Button
+                            v-if="authStore.hasPermission('publish-dialogs')"
+                            :label="dialog.is_published ? 'Ritira' : 'Pubblica'"
+                            :icon="dialog.is_published ? 'pi pi-eye-slash' : 'pi pi-eye'"
+                            :severity="dialog.is_published ? 'warning' : 'success'"
+                            outlined
+                            @click="togglePublish"
+                        />
                         <Button label="Elimina" icon="pi pi-trash" severity="danger" outlined @click="confirmDelete" />
                     </div>
                 </div>
@@ -413,6 +425,7 @@ import { getParticipantColor, getParticipantLightColor } from '../../utils/color
 
 import Button from 'primevue/button';
 import Card from 'primevue/card';
+import Tag from 'primevue/tag';
 import DataTable from 'primevue/datatable';
 import Column from 'primevue/column';
 import ProgressSpinner from 'primevue/progressspinner';
@@ -434,6 +447,7 @@ import TabPanels from 'primevue/tabpanels';
 import TabPanel from 'primevue/tabpanel';
 import { useDialogNavigationStore } from '../../stores/dialogNavigation';
 import { useTablePreferencesStore } from '../../stores/tablePreferences';
+import { useAuthStore } from '../../stores/auth';
 import { storeToRefs } from 'pinia';
 
 const route = useRoute();
@@ -442,6 +456,7 @@ const toast = useToast();
 const confirm = useConfirm();
 const navStore = useDialogNavigationStore();
 const tablePrefs = useTablePreferencesStore();
+const authStore = useAuthStore();
 const { transcriptSelectedColumns, transcriptFilters } = storeToRefs(tablePrefs);
 
 const loading = ref(true);
@@ -558,6 +573,45 @@ const loadDialog = async () => {
     } finally {
         loading.value = false;
     }
+};
+
+const togglePublish = async () => {
+    const newState = !dialog.value.is_published;
+    const action = newState ? 'pubblicare' : 'ritirare';
+
+    confirm.require({
+        message: `Sei sicuro di voler ${action} il dialogo "${dialog.value.title}"?`,
+        header: 'Conferma azione',
+        icon: 'pi pi-exclamation-triangle',
+        acceptProps: {
+            label: newState ? 'Pubblica' : 'Ritira',
+            severity: newState ? 'success' : 'warning'
+        },
+        rejectProps: {
+            label: 'Annulla',
+            severity: 'secondary',
+            outlined: true
+        },
+        accept: async () => {
+            try {
+                await dialogService.update(dialog.value.id, { is_published: newState });
+                dialog.value.is_published = newState;
+                toast.add({
+                    severity: 'success',
+                    summary: 'Successo',
+                    detail: `Dialogo ${newState ? 'pubblicato' : 'ritirato'} correttamente`,
+                    life: 3000
+                });
+            } catch (error) {
+                toast.add({
+                    severity: 'error',
+                    summary: 'Errore',
+                    detail: `Impossibile ${action} il dialogo`,
+                    life: 3000
+                });
+            }
+        }
+    });
 };
 
 const confirmDelete = () => {
