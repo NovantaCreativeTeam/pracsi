@@ -222,10 +222,10 @@ class EafImportService
                     $move->turn = $turnCounter++;
                     $participantName = $moveData['participant_name'];
                     // Move Level 1, 2, 3
-                    $move->move_level_1_id = $this->findMoveLevelId($tiers, 'MoveLev1', $move->begin, $move->end, $participantName, MoveLevel1::class);
-                    $move->move_level_2_id = $this->findMoveLevelId($tiers, 'MoveLev2', $move->begin, $move->end, $participantName, MoveLevel2::class);
-                    $move->move_level_3_id = $this->findMoveLevelId($tiers, 'MoveLev3', $move->begin, $move->end, $participantName, MoveLevel3::class);
-                    $move->non_verbal_action_id = $this->findMoveLevelId($tiers, 'Non verbal action', $move->begin, $move->end, $participantName, NonVerbalAction::class);
+                    $moveLevel1Ids = $this->findMoveLevelIds($tiers, 'MoveLev1', $move->begin, $move->end, $participantName, MoveLevel1::class);
+                    $moveLevel2Ids = $this->findMoveLevelIds($tiers, 'MoveLev2', $move->begin, $move->end, $participantName, MoveLevel2::class);
+                    $moveLevel3Ids = $this->findMoveLevelIds($tiers, 'MoveLev3', $move->begin, $move->end, $participantName, MoveLevel3::class);
+                    $nonVerbalActionIds = $this->findMoveLevelIds($tiers, 'Non verbal action', $move->begin, $move->end, $participantName, NonVerbalAction::class);
                 } else {
                     $move->turn = null;
                 }
@@ -236,6 +236,13 @@ class EafImportService
                 $move->transaction_id = $this->findIdByTime($transactions, $move->begin, $move->end);
 
                 $move->save();
+
+                if (!$moveData['is_pause']) {
+                    $move->moveLevel1s()->sync($moveLevel1Ids);
+                    $move->moveLevel2s()->sync($moveLevel2Ids);
+                    $move->moveLevel3s()->sync($moveLevel3Ids);
+                    $move->nonVerbalActions()->sync($nonVerbalActionIds);
+                }
             }
         });
     }
@@ -359,19 +366,20 @@ class EafImportService
         return null;
     }
 
-    private function findMoveLevelId(array $tiers, string $lingType, int $begin, int $end, string $participant, string $modelClass): ?int
+    private function findMoveLevelIds(array $tiers, string $lingType, int $begin, int $end, string $participant, string $modelClass): array
     {
+        $ids = [];
         foreach ($tiers as $tier) {
             if ($tier['linguistic_type'] === $lingType && $tier['participant'] === $participant) {
                 foreach ($tier['annotations'] as $ann) {
                     if (!($ann['end'] < $begin || $ann['begin'] > $end)) {
                         $value = $ann['value'] ?: 'Default';
                         $level = $modelClass::firstOrCreate(['name' => $value]);
-                        return $level->id;
+                        $ids[] = $level->id;
                     }
                 }
             }
         }
-        return null;
+        return array_unique($ids);
     }
 }

@@ -117,10 +117,10 @@
                                             'sequence.type.name',
                                             'micro_task.type.name',
                                             'transaction.name',
-                                            'move_level1.name',
-                                            'move_level2.name',
-                                            'move_level3.name',
-                                            'non_verbal_action.name'
+                                            'move_level1s',
+                                            'move_level2s',
+                                            'move_level3s',
+                                            'non_verbal_actions'
                                         ]"
                                         class="p-datatable-sm text-sm"
                                         filterDisplay="menu"
@@ -192,9 +192,9 @@
                                             </template>
                                         </Column>
 
-                                        <Column v-if="selectedColumns.some(c => c.field === 'non_verbal_action')" field="non_verbal_action.name" header="Non Verbal Action" :showFilterMatchModes="false">
+                                        <Column v-if="selectedColumns.some(c => c.field === 'non_verbal_action')" field="non_verbal_actions" header="Non Verbal Action" :showFilterMatchModes="false">
                                             <template #body="{ data }">
-                                                {{ data.non_verbal_action?.name || '-' }}
+                                                {{ data.non_verbal_actions?.map(a => a.name).join(', ') || '-' }}
                                             </template>
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per Non Verbal Action" />
@@ -231,27 +231,27 @@
                                             </template>
                                         </Column>
 
-                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level1')" field="move_level1.name" header="ML 1" :showFilterMatchModes="false">
+                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level1')" field="move_level1s" header="ML 1" :showFilterMatchModes="false">
                                             <template #body="{ data }">
-                                                {{ data.move_level1?.name || '-' }}
+                                                {{ data.move_level1s?.map(l => l.name).join(', ') || '-' }}
                                             </template>
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per ML 1" />
                                             </template>
                                         </Column>
 
-                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level2')" field="move_level2.name" header="ML 2" :showFilterMatchModes="false">
+                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level2')" field="move_level2s" header="ML 2" :showFilterMatchModes="false">
                                             <template #body="{ data }">
-                                                {{ data.move_level2?.name || '-' }}
+                                                {{ data.move_level2s?.map(l => l.name).join(', ') || '-' }}
                                             </template>
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per ML 2" />
                                             </template>
                                         </Column>
 
-                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level3')" field="move_level3.name" header="ML 3" :showFilterMatchModes="false">
+                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level3')" field="move_level3s" header="ML 3" :showFilterMatchModes="false">
                                             <template #body="{ data }">
-                                                {{ data.move_level3?.name || '-' }}
+                                                {{ data.move_level3s?.map(l => l.name).join(', ') || '-' }}
                                             </template>
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per ML 3" />
@@ -459,17 +459,17 @@ const columns = ref([
     { field: 'sequence', header: 'Sequence' },
     { field: 'turn', header: 'Turno' },
     { field: 'participant', header: 'Parlante' },
-    { field: 'non_verbal_action', header: 'Non Verbal Action' },
+    { field: 'non_verbal_actions', header: 'Non Verbal Action' },
     { field: 'annotation', header: 'Trascrizione' },
     { field: 'notes', header: 'Note' },
     { field: 'micro_task', header: 'Micro Task' },
     { field: 'transaction', header: 'Transaction' },
-    { field: 'move_level1', header: 'ML 1' },
-    { field: 'move_level2', header: 'ML 2' },
-    { field: 'move_level3', header: 'ML 3' }
+    { field: 'move_level1s', header: 'ML 1' },
+    { field: 'move_level2s', header: 'ML 2' },
+    { field: 'move_level3s', header: 'ML 3' }
 ]);
 
-const initialFields = ['index', 'turn', 'begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1', 'notes'];
+const initialFields = ['index', 'turn', 'begin', 'end', 'task', 'sequence', 'participant', 'annotation', 'micro_task', 'move_level1s', 'notes'];
 const selectedColumns = ref([]);
 
 // Inizializza selectedColumns considerando le preferenze e aggiungendo sempre 'participant'
@@ -496,10 +496,10 @@ if (transcriptFilters.value) {
         'sequence.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
         'micro_task.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
         'transaction.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'move_level1.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'move_level2.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'move_level3.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'non_verbal_action.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        move_level1s: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        move_level2s: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        move_level3s: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        non_verbal_actions: { value: null, matchMode: FilterMatchMode.CONTAINS },
     };
 }
 

@@ -60,10 +60,10 @@ class DialogController extends Controller
                 'sequence.interactionalSegment',
                 'sequence.type',
                 'transaction',
-                'moveLevel1',
-                'moveLevel2',
-                'moveLevel3',
-                'nonVerbalAction',
+                'moveLevel1s',
+                'moveLevel2s',
+                'moveLevel3s',
+                'nonVerbalActions',
             ])
             ->orderBy('begin')
             ->get();

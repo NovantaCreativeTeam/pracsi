@@ -13,10 +13,6 @@ class Move extends Model
         'sequence_id',
         'transaction_id',
         'participant_id',
-        'move_level_1_id',
-        'move_level_2_id',
-        'move_level_3_id',
-        'non_verbal_action_id',
         'begin',
         'end',
         'annotation',
@@ -42,24 +38,24 @@ class Move extends Model
         return $this->belongsTo(Participant::class);
     }
 
-    public function moveLevel1()
+    public function moveLevel1s()
     {
-        return $this->belongsTo(MoveLevel1::class, 'move_level_1_id');
+        return $this->belongsToMany(MoveLevel1::class, 'move_move_level_1', 'move_id', 'move_level_1_id');
     }
 
-    public function moveLevel2()
+    public function moveLevel2s()
     {
-        return $this->belongsTo(MoveLevel2::class, 'move_level_2_id');
+        return $this->belongsToMany(MoveLevel2::class, 'move_move_level_2', 'move_id', 'move_level_2_id');
     }
 
-    public function moveLevel3()
+    public function moveLevel3s()
     {
-        return $this->belongsTo(MoveLevel3::class, 'move_level_3_id');
+        return $this->belongsToMany(MoveLevel3::class, 'move_move_level_3', 'move_id', 'move_level_3_id');
     }
 
-    public function nonVerbalAction()
+    public function nonVerbalActions()
     {
-        return $this->belongsTo(NonVerbalAction::class, 'non_verbal_action_id');
+        return $this->belongsToMany(NonVerbalAction::class, 'move_non_verbal_action', 'move_id', 'non_verbal_action_id');
     }
 
     public function dialog()

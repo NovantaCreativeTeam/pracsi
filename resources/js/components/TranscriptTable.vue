@@ -75,9 +75,9 @@
                 </Column>
             </template>
 
-            <Column v-if="isColumnSelected('nva')" field="non_verbal_action.name" header="Non Verbal Action" :showFilterMatchModes="false">
+            <Column v-if="isColumnSelected('nva')" field="non_verbal_actions" header="Non Verbal Action" :showFilterMatchModes="false">
                 <template #body="{ data }">
-                    {{ data.non_verbal_action?.name || data.nonVerbalAction?.name || '-' }}
+                    {{ data.non_verbal_actions?.map(a => a.name).join(', ') || '-' }}
                 </template>
                 <template #filter="{ filterModel }">
                     <InputText v-model="filterModel.value" type="text" placeholder="Filtra Non Verbal Action" />
@@ -143,27 +143,27 @@
                 </template>
             </Column>
 
-            <Column v-if="isColumnSelected('ml1')" field="move_level1.name" header="ML 1" :showFilterMatchModes="false">
+            <Column v-if="isColumnSelected('ml1')" field="move_level1s" header="ML 1" :showFilterMatchModes="false">
                 <template #body="{ data }">
-                    {{ data.move_level1?.name || data.moveLevel1?.name || '-' }}
+                    {{ data.move_level1s?.map(l => l.name).join(', ') || '-' }}
                 </template>
                 <template #filter="{ filterModel }">
                     <InputText v-model="filterModel.value" type="text" placeholder="Filtra ML 1" />
                 </template>
             </Column>
 
-            <Column v-if="isColumnSelected('ml2')" field="move_level2.name" header="ML 2" :showFilterMatchModes="false">
+            <Column v-if="isColumnSelected('ml2')" field="move_level2s" header="ML 2" :showFilterMatchModes="false">
                 <template #body="{ data }">
-                    {{ data.move_level2?.name || data.moveLevel2?.name || '-' }}
+                    {{ data.move_level2s?.map(l => l.name).join(', ') || '-' }}
                 </template>
                 <template #filter="{ filterModel }">
                     <InputText v-model="filterModel.value" type="text" placeholder="Filtra ML 2" />
                 </template>
             </Column>
 
-            <Column v-if="isColumnSelected('ml3')" field="move_level3.name" header="ML 3" :showFilterMatchModes="false">
+            <Column v-if="isColumnSelected('ml3')" field="move_level3s" header="ML 3" :showFilterMatchModes="false">
                 <template #body="{ data }">
-                    {{ data.move_level3?.name || data.moveLevel3?.name || '-' }}
+                    {{ data.move_level3s?.map(l => l.name).join(', ') || '-' }}
                 </template>
                 <template #filter="{ filterModel }">
                     <InputText v-model="filterModel.value" type="text" placeholder="Filtra ML 3" />
@@ -286,10 +286,10 @@ if (transcriptFilters.value) {
         'sequence.interactional_segment_id': { value: null, matchMode: FilterMatchMode.CONTAINS },
         'sequence.type.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
         'transaction.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'move_level1.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'move_level2.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'move_level3.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
-        'non_verbal_action.name': { value: null, matchMode: FilterMatchMode.CONTAINS },
+        move_level1s: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        move_level2s: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        move_level3s: { value: null, matchMode: FilterMatchMode.CONTAINS },
+        non_verbal_actions: { value: null, matchMode: FilterMatchMode.CONTAINS },
     };
 }
 
@@ -303,10 +303,10 @@ const globalFilterFields = [
     'micro_task.task.type.name',
     'micro_task.type.name',
     'transaction.name',
-    'move_level1.name',
-    'move_level2.name',
-    'move_level3.name',
-    'non_verbal_action.name'
+    'move_level1s',
+    'move_level2s',
+    'move_level3s',
+    'non_verbal_actions'
 ];
 
 
