@@ -204,18 +204,18 @@
                                             </template>
                                         </Column>
 
-                                        <Column v-if="selectedColumns.some(c => c.field === 'non_verbal_action')" field="non_verbal_actions" header="Non Verbal Action" :showFilterMatchModes="false">
+                                        <Column v-if="selectedColumns.some(c => c.field === 'annotation')" field="annotation" header="Trascrizione" :showFilterMatchModes="false">
+                                            <template #filter="{ filterModel }">
+                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per trascrizione" />
+                                            </template>
+                                        </Column>
+
+                                        <Column v-if="selectedColumns.some(c => c.field === 'non_verbal_actions')" field="non_verbal_actions" header="Non Verbal Action" :showFilterMatchModes="false">
                                             <template #body="{ data }">
                                                 {{ data.non_verbal_actions?.map(a => a.name).join(', ') || '-' }}
                                             </template>
                                             <template #filter="{ filterModel }">
                                                 <InputText v-model="filterModel.value" type="text" placeholder="Filtra per Non Verbal Action" />
-                                            </template>
-                                        </Column>
-
-                                        <Column v-if="selectedColumns.some(c => c.field === 'annotation')" field="annotation" header="Trascrizione" :showFilterMatchModes="false">
-                                            <template #filter="{ filterModel }">
-                                                <InputText v-model="filterModel.value" type="text" placeholder="Filtra per trascrizione" />
                                             </template>
                                         </Column>
 
@@ -243,7 +243,7 @@
                                             </template>
                                         </Column>
 
-                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level1')" field="move_level1s" header="ML 1" :showFilterMatchModes="false">
+                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level1s')" field="move_level1s" header="ML 1" :showFilterMatchModes="false">
                                             <template #body="{ data }">
                                                 {{ data.move_level1s?.map(l => l.name).join(', ') || '-' }}
                                             </template>
@@ -252,7 +252,7 @@
                                             </template>
                                         </Column>
 
-                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level2')" field="move_level2s" header="ML 2" :showFilterMatchModes="false">
+                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level2s')" field="move_level2s" header="ML 2" :showFilterMatchModes="false">
                                             <template #body="{ data }">
                                                 {{ data.move_level2s?.map(l => l.name).join(', ') || '-' }}
                                             </template>
@@ -261,7 +261,7 @@
                                             </template>
                                         </Column>
 
-                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level3')" field="move_level3s" header="ML 3" :showFilterMatchModes="false">
+                                        <Column v-if="selectedColumns.some(c => c.field === 'move_level3s')" field="move_level3s" header="ML 3" :showFilterMatchModes="false">
                                             <template #body="{ data }">
                                                 {{ data.move_level3s?.map(l => l.name).join(', ') || '-' }}
                                             </template>
@@ -474,8 +474,8 @@ const columns = ref([
     { field: 'sequence', header: 'Sequence' },
     { field: 'turn', header: 'Turno' },
     { field: 'participant', header: 'Parlante' },
-    { field: 'non_verbal_actions', header: 'Non Verbal Action' },
     { field: 'annotation', header: 'Trascrizione' },
+    { field: 'non_verbal_actions', header: 'Non Verbal Action' },
     { field: 'notes', header: 'Note' },
     { field: 'micro_task', header: 'Micro Task' },
     { field: 'transaction', header: 'Transaction' },

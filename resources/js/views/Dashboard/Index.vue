@@ -1,6 +1,6 @@
 <template>
     <div class="p-6">
-        <DialogDataTable title="Tutti i Dialoghi" />
+        <DialogDataTable title="Tutti i Task" />
     </div>
 </template>
 

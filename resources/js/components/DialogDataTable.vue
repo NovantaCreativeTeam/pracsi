@@ -136,7 +136,7 @@ const columns = ref([
 const selectedColumns = ref(
     dialogsSelectedColumns.value ||
     columns.value.filter(col =>
-        ['corpus.project_reference', 'topic', 'title', 'customer_n', 'subject_languages', 'reference', 'restaurant_features'].includes(col.field)
+        ['topic', 'title', 'city'].includes(col.field)
     )
 );
 
