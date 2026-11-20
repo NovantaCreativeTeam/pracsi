@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class NonVerbalAction extends Model
 {
     protected $table = 'non_verbal_actions';
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'begin', 'end'];
 
     public function moves()
     {

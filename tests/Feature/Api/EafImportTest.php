@@ -72,7 +72,7 @@ class EafImportTest extends TestCase
         $response->assertStatus(201);
 
         $dialogId = $response->json('data.id');
-        $dialog = Dialog::with(['moves.moveLevel1', 'moves.moveLevel2', 'moves.moveLevel3', 'moves.participant'])->find($dialogId);
+        $dialog = Dialog::with(['moves.moveLevel1s', 'moves.moveLevel2s', 'moves.moveLevel3s', 'moves.participant'])->find($dialogId);
 
         $this->assertNotNull($dialog);
 
@@ -84,18 +84,18 @@ class EafImportTest extends TestCase
 
         $movesWithLevel1 = Move::where('dialog_id', $dialogId)
             ->whereNotNull('participant_id')
-            ->whereNotNull('move_level_1_id')
+            ->whereHas('moveLevel1s')
             ->count();
         $this->assertGreaterThan(0, $movesWithLevel1, "Dovrebbero esserci mosse con Move Level 1");
 
         $movesWithLevel2 = Move::where('dialog_id', $dialogId)
             ->whereNotNull('participant_id')
-            ->whereNotNull('move_level_2_id')
+            ->whereHas('moveLevel2s')
             ->count();
         $this->assertGreaterThan(0, $movesWithLevel2, "Dovrebbero esserci mosse con Move Level 2");
 
         $movesWithNonVerbal = Move::where('dialog_id', $dialogId)
-            ->whereNotNull('non_verbal_action_id')
+            ->whereHas('nonVerbalActions')
             ->count();
         $this->assertGreaterThan(0, $movesWithNonVerbal, "Dovrebbero esserci mosse con Non Verbal Action");
 
@@ -103,5 +103,25 @@ class EafImportTest extends TestCase
             ->whereNotNull('micro_task_id')
             ->count();
         $this->assertGreaterThan(0, $movesWithMicroTask, "Dovrebbero esserci mosse con MicroTask");
+
+        // Verifica che begin ed end siano valorizzati in MoveLevel1
+        $ml1 = \App\Models\MoveLevel1::whereNotNull('begin')->whereNotNull('end')->first();
+        $this->assertNotNull($ml1, "MoveLevel1 dovrebbe avere begin ed end valorizzati");
+
+        // Verifica ordinamento ML1 per la prima mossa parlata che ha ML1
+        $firstMoveWithML1 = Move::where('dialog_id', $dialogId)
+            ->whereNotNull('participant_id')
+            ->whereHas('moveLevel1s')
+            ->orderBy('begin')
+            ->first();
+
+        $levels = $firstMoveWithML1->moveLevel1s;
+        if ($levels->count() > 1) {
+            $prevBegin = -1;
+            foreach ($levels as $level) {
+                $this->assertGreaterThanOrEqual($prevBegin, $level->begin ?? 0, "I livelli ML1 dovrebbero essere ordinati per begin");
+                $prevBegin = $level->begin ?? 0;
+            }
+        }
     }
 }

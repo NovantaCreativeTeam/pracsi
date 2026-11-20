@@ -40,22 +40,30 @@ class Move extends Model
 
     public function moveLevel1s()
     {
-        return $this->belongsToMany(MoveLevel1::class, 'move_move_level_1', 'move_id', 'move_level_1_id');
+        return $this->belongsToMany(MoveLevel1::class, 'move_move_level_1', 'move_id', 'move_level_1_id')
+            ->orderByRaw('COALESCE(begin, 0) ASC')
+            ->orderBy('id', 'ASC');
     }
 
     public function moveLevel2s()
     {
-        return $this->belongsToMany(MoveLevel2::class, 'move_move_level_2', 'move_id', 'move_level_2_id');
+        return $this->belongsToMany(MoveLevel2::class, 'move_move_level_2', 'move_id', 'move_level_2_id')
+            ->orderByRaw('COALESCE(begin, 0) ASC')
+            ->orderBy('id', 'ASC');
     }
 
     public function moveLevel3s()
     {
-        return $this->belongsToMany(MoveLevel3::class, 'move_move_level_3', 'move_id', 'move_level_3_id');
+        return $this->belongsToMany(MoveLevel3::class, 'move_move_level_3', 'move_id', 'move_level_3_id')
+            ->orderByRaw('COALESCE(begin, 0) ASC')
+            ->orderBy('id', 'ASC');
     }
 
     public function nonVerbalActions()
     {
-        return $this->belongsToMany(NonVerbalAction::class, 'move_non_verbal_action', 'move_id', 'non_verbal_action_id');
+        return $this->belongsToMany(NonVerbalAction::class, 'move_non_verbal_action', 'move_id', 'non_verbal_action_id')
+            ->orderByRaw('COALESCE(begin, 0) ASC')
+            ->orderBy('id', 'ASC');
     }
 
     public function dialog()

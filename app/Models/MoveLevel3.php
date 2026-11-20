@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Model;
 class MoveLevel3 extends Model
 {
     protected $table = 'move_level_3';
-    protected $fillable = ['name'];
+    protected $fillable = ['name', 'begin', 'end'];
 
     public function moves()
     {

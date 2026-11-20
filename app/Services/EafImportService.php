@@ -225,7 +225,10 @@ class EafImportService
                     $moveLevel1Ids = $this->findMoveLevelIds($tiers, 'MoveLev1', $move->begin, $move->end, $participantName, MoveLevel1::class);
                     $moveLevel2Ids = $this->findMoveLevelIds($tiers, 'MoveLev2', $move->begin, $move->end, $participantName, MoveLevel2::class);
                     $moveLevel3Ids = $this->findMoveLevelIds($tiers, 'MoveLev3', $move->begin, $move->end, $participantName, MoveLevel3::class);
-                    $nonVerbalActionIds = $this->findMoveLevelIds($tiers, 'Non verbal action', $move->begin, $move->end, $participantName, NonVerbalAction::class);
+                    $nonVerbalActionIds = array_merge(
+                        $this->findMoveLevelIds($tiers, 'Non verbal action', $move->begin, $move->end, $participantName, NonVerbalAction::class),
+                        $this->findMoveLevelIds($tiers, 'NonVerbalAction', $move->begin, $move->end, $participantName, NonVerbalAction::class)
+                    );
                 } else {
                     $move->turn = null;
                 }
@@ -374,7 +377,11 @@ class EafImportService
                 foreach ($tier['annotations'] as $ann) {
                     if (!($ann['end'] <= $begin || $ann['begin'] >= $end)) {
                         $value = $ann['value'] ?: 'Default';
-                        $level = $modelClass::firstOrCreate(['name' => $value]);
+                        $level = $modelClass::firstOrCreate([
+                            'name' => $value,
+                            'begin' => $ann['begin'],
+                            'end' => $ann['end'],
+                        ]);
                         $ids[] = $level->id;
                     }
                 }
