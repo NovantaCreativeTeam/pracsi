@@ -230,7 +230,7 @@ class EafImportService
                     $move->turn = null;
                 }
 
-                // Associazione con entità trasversali in base al tempo
+                // Associazione con entità trasversali in base al tempo (solo per i turni del parlante, non per le pause)
                 $move->micro_task_id = $this->findIdByTime($microTasks, $move->begin, $move->end);
                 $move->sequence_id = $this->findIdByTime($sequences, $move->begin, $move->end);
                 $move->transaction_id = $this->findIdByTime($transactions, $move->begin, $move->end);
@@ -313,7 +313,7 @@ class EafImportService
                 foreach ($tiers as $tier) {
                     if ($tier['linguistic_type'] === 'Parlante') {
                         foreach ($tier['annotations'] as $pAnn) {
-                            if (!($pAnn['end'] < $ann['begin'] || $pAnn['begin'] > $ann['end'])) {
+                            if (!($pAnn['end'] <= $ann['begin'] || $pAnn['begin'] >= $ann['end'])) {
                                 $participantId = $participantsMap[$tier['participant']] ?? null;
                                 if ($participantId) break 2;
                             }
@@ -359,7 +359,7 @@ class EafImportService
     {
         foreach ($entities as $entity) {
             // Logica di sovrapposizione temporale (almeno parziale)
-            if (!($entity['end'] < $begin || $entity['begin'] > $end)) {
+            if (!($entity['end'] <= $begin || $entity['begin'] >= $end)) {
                 return $entity['id'];
             }
         }
@@ -372,7 +372,7 @@ class EafImportService
         foreach ($tiers as $tier) {
             if ($tier['linguistic_type'] === $lingType && $tier['participant'] === $participant) {
                 foreach ($tier['annotations'] as $ann) {
-                    if (!($ann['end'] < $begin || $ann['begin'] > $end)) {
+                    if (!($ann['end'] <= $begin || $ann['begin'] >= $end)) {
                         $value = $ann['value'] ?: 'Default';
                         $level = $modelClass::firstOrCreate(['name' => $value]);
                         $ids[] = $level->id;
