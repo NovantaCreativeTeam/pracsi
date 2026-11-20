@@ -122,6 +122,7 @@
                                         :value="moves"
                                         v-model:filters="filters"
                                         :exportFilename="dialog?.reference || 'trascrizione'"
+                                        :exportFunction="exportData"
                                         :globalFilterFields="[
                                             'participant.code',
                                             'annotation',
@@ -526,6 +527,33 @@ const onColumnToggle = (val) => {
     selectedColumns.value = columns.value.filter((col) => val.includes(col));
     // Persisti solo le colonne che non sono legate al partecipante generico
     transcriptSelectedColumns.value = JSON.parse(JSON.stringify(selectedColumns.value.filter(col => col.field !== 'participant')));
+};
+
+const exportData = ({ data, field }) => {
+    switch (field) {
+        case 'begin':
+        case 'end':
+            return formatTime(data);
+        case 'micro_task.task.type.name':
+        case 'sequence.type.name':
+        case 'micro_task.type.name':
+        case 'transaction.name':
+        case 'annotation':
+            return data || '-';
+        case 'sequence.interactional_segment_id':
+            return data ? `IS ${data}` : '-';
+        case 'participant.code':
+            return data || 'Pausa';
+        case 'non_verbal_actions':
+        case 'move_level1s':
+        case 'move_level2s':
+        case 'move_level3s':
+            return data?.map(item => item.name).join(', ') || '-';
+        case 'notes':
+            return data || '-';
+        default:
+            return data;
+    }
 };
 
 const formatTime = (milliseconds) => {
